@@ -9,38 +9,227 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UploadsRouteImport } from './routes/uploads'
+import { Route as PesquisaRouteImport } from './routes/pesquisa'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as FaceSearchRouteImport } from './routes/face-search'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PainelIndexRouteImport } from './routes/painel.index'
+import { Route as InvestigadosIndexRouteImport } from './routes/investigados.index'
+import { Route as PainelIdRouteImport } from './routes/painel.$id'
+import { Route as PTokenRouteImport } from './routes/p.$token'
+import { Route as InvestigadosIdRouteImport } from './routes/investigados.$id'
 
+const UploadsRoute = UploadsRouteImport.update({
+  id: '/uploads',
+  path: '/uploads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PesquisaRoute = PesquisaRouteImport.update({
+  id: '/pesquisa',
+  path: '/pesquisa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaceSearchRoute = FaceSearchRouteImport.update({
+  id: '/face-search',
+  path: '/face-search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PainelIndexRoute = PainelIndexRouteImport.update({
+  id: '/painel/',
+  path: '/painel/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvestigadosIndexRoute = InvestigadosIndexRouteImport.update({
+  id: '/investigados/',
+  path: '/investigados/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelIdRoute = PainelIdRouteImport.update({
+  id: '/painel/$id',
+  path: '/painel/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PTokenRoute = PTokenRouteImport.update({
+  id: '/p/$token',
+  path: '/p/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvestigadosIdRoute = InvestigadosIdRouteImport.update({
+  id: '/investigados/$id',
+  path: '/investigados/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
+  '/face-search': typeof FaceSearchRoute
+  '/login': typeof LoginRoute
+  '/pesquisa': typeof PesquisaRoute
+  '/uploads': typeof UploadsRoute
+  '/investigados/$id': typeof InvestigadosIdRoute
+  '/p/$token': typeof PTokenRoute
+  '/painel/$id': typeof PainelIdRoute
+  '/investigados/': typeof InvestigadosIndexRoute
+  '/painel/': typeof PainelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
+  '/face-search': typeof FaceSearchRoute
+  '/login': typeof LoginRoute
+  '/pesquisa': typeof PesquisaRoute
+  '/uploads': typeof UploadsRoute
+  '/investigados/$id': typeof InvestigadosIdRoute
+  '/p/$token': typeof PTokenRoute
+  '/painel/$id': typeof PainelIdRoute
+  '/investigados': typeof InvestigadosIndexRoute
+  '/painel': typeof PainelIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
+  '/face-search': typeof FaceSearchRoute
+  '/login': typeof LoginRoute
+  '/pesquisa': typeof PesquisaRoute
+  '/uploads': typeof UploadsRoute
+  '/investigados/$id': typeof InvestigadosIdRoute
+  '/p/$token': typeof PTokenRoute
+  '/painel/$id': typeof PainelIdRoute
+  '/investigados/': typeof InvestigadosIndexRoute
+  '/painel/': typeof PainelIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/configuracoes'
+    | '/dashboard'
+    | '/face-search'
+    | '/login'
+    | '/pesquisa'
+    | '/uploads'
+    | '/investigados/$id'
+    | '/p/$token'
+    | '/painel/$id'
+    | '/investigados/'
+    | '/painel/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/configuracoes'
+    | '/dashboard'
+    | '/face-search'
+    | '/login'
+    | '/pesquisa'
+    | '/uploads'
+    | '/investigados/$id'
+    | '/p/$token'
+    | '/painel/$id'
+    | '/investigados'
+    | '/painel'
+  id:
+    | '__root__'
+    | '/'
+    | '/configuracoes'
+    | '/dashboard'
+    | '/face-search'
+    | '/login'
+    | '/pesquisa'
+    | '/uploads'
+    | '/investigados/$id'
+    | '/p/$token'
+    | '/painel/$id'
+    | '/investigados/'
+    | '/painel/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  DashboardRoute: typeof DashboardRoute
+  FaceSearchRoute: typeof FaceSearchRoute
+  LoginRoute: typeof LoginRoute
+  PesquisaRoute: typeof PesquisaRoute
+  UploadsRoute: typeof UploadsRoute
+  InvestigadosIdRoute: typeof InvestigadosIdRoute
+  PTokenRoute: typeof PTokenRoute
+  PainelIdRoute: typeof PainelIdRoute
+  InvestigadosIndexRoute: typeof InvestigadosIndexRoute
+  PainelIndexRoute: typeof PainelIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/uploads': {
+      id: '/uploads'
+      path: '/uploads'
+      fullPath: '/uploads'
+      preLoaderRoute: typeof UploadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pesquisa': {
+      id: '/pesquisa'
+      path: '/pesquisa'
+      fullPath: '/pesquisa'
+      preLoaderRoute: typeof PesquisaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/face-search': {
+      id: '/face-search'
+      path: '/face-search'
+      fullPath: '/face-search'
+      preLoaderRoute: typeof FaceSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +237,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/painel/': {
+      id: '/painel/'
+      path: '/painel'
+      fullPath: '/painel/'
+      preLoaderRoute: typeof PainelIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/investigados/': {
+      id: '/investigados/'
+      path: '/investigados'
+      fullPath: '/investigados/'
+      preLoaderRoute: typeof InvestigadosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel/$id': {
+      id: '/painel/$id'
+      path: '/painel/$id'
+      fullPath: '/painel/$id'
+      preLoaderRoute: typeof PainelIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$token': {
+      id: '/p/$token'
+      path: '/p/$token'
+      fullPath: '/p/$token'
+      preLoaderRoute: typeof PTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/investigados/$id': {
+      id: '/investigados/$id'
+      path: '/investigados/$id'
+      fullPath: '/investigados/$id'
+      preLoaderRoute: typeof InvestigadosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  DashboardRoute: DashboardRoute,
+  FaceSearchRoute: FaceSearchRoute,
+  LoginRoute: LoginRoute,
+  PesquisaRoute: PesquisaRoute,
+  UploadsRoute: UploadsRoute,
+  InvestigadosIdRoute: InvestigadosIdRoute,
+  PTokenRoute: PTokenRoute,
+  PainelIdRoute: PainelIdRoute,
+  InvestigadosIndexRoute: InvestigadosIndexRoute,
+  PainelIndexRoute: PainelIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

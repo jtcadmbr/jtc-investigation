@@ -1,0 +1,1 @@
+ALTER TABLE public.investigateds ADD COLUMN IF NOT EXISTS documentos jsonb NOT NULL DEFAULT '[]'::jsonb;

@@ -1,0 +1,1 @@
+import{r as o,s as r}from"./index-Cxevzr62.js";function c(e,s){o.useEffect(()=>{const n=r.channel(`rt-${e.join("-")}-${Math.random().toString(36).slice(2,8)}`);return e.forEach(a=>{n.on("postgres_changes",{event:"*",schema:"public",table:a},()=>s())}),n.subscribe(),()=>{r.removeChannel(n)}},[e.join(",")])}export{c as u};

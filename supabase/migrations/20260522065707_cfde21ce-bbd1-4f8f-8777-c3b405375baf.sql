@@ -1,0 +1,1 @@
+ALTER TABLE public.investigateds ADD COLUMN data_obito date;

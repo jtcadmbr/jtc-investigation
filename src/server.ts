@@ -1,3 +1,17 @@
+// SSR shim — must run before any module that touches localStorage at import time.
+if (typeof (globalThis as any).localStorage === "undefined") {
+  const noopStorage = {
+    getItem: () => null,
+    setItem: () => {},
+    removeItem: () => {},
+    clear: () => {},
+    key: () => null,
+    length: 0,
+  };
+  (globalThis as any).localStorage = noopStorage;
+  (globalThis as any).sessionStorage = noopStorage;
+}
+
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
