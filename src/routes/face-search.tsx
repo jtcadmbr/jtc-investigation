@@ -628,6 +628,17 @@ function Page() {
                 {scanning ? "Analisando derme..." : queryFace ? "Iniciar Busca Forense" : "Selecione um rosto"}
               </button>
 
+              {candidates.length > 1 && (
+                <button
+                  onClick={scanAll}
+                  disabled={!modelsReady || scanning}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-primary/40 bg-primary/10 text-primary font-semibold text-xs hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  <ScanFace size={14} />
+                  {scanning ? "Processando..." : `Buscar todos os ${candidates.length} rostos`}
+                </button>
+              )}
+
               {queryFace && !scanning && (
                 <div className="text-xs space-y-1.5 p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <div className="flex justify-between">
