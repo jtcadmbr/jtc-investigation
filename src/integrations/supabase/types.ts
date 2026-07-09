@@ -14,7 +14,424 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      boards: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          titulo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          titulo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      connections: {
+        Row: {
+          board_id: string | null
+          cor: string | null
+          created_at: string
+          from_id: string
+          id: string
+          rotulo: string | null
+          texto: string | null
+          to_id: string
+          user_id: string
+        }
+        Insert: {
+          board_id?: string | null
+          cor?: string | null
+          created_at?: string
+          from_id: string
+          id?: string
+          rotulo?: string | null
+          texto?: string | null
+          to_id: string
+          user_id: string
+        }
+        Update: {
+          board_id?: string | null
+          cor?: string | null
+          created_at?: string
+          from_id?: string
+          id?: string
+          rotulo?: string | null
+          texto?: string | null
+          to_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connections_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "boards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connections_from_id_fkey"
+            columns: ["from_id"]
+            isOneToOne: false
+            referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connections_to_id_fkey"
+            columns: ["to_id"]
+            isOneToOne: false
+            referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      face_embeddings: {
+        Row: {
+          age: number | null
+          box_h: number | null
+          box_w: number | null
+          box_x: number | null
+          box_y: number | null
+          created_at: string
+          detector_score: number | null
+          embedding: number[]
+          face_index: number
+          gender: string | null
+          gender_probability: number | null
+          id: string
+          investigated_id: string
+          model_version: string
+          photo_url: string
+          quality: number | null
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          box_h?: number | null
+          box_w?: number | null
+          box_x?: number | null
+          box_y?: number | null
+          created_at?: string
+          detector_score?: number | null
+          embedding: number[]
+          face_index?: number
+          gender?: string | null
+          gender_probability?: number | null
+          id?: string
+          investigated_id: string
+          model_version: string
+          photo_url: string
+          quality?: number | null
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          box_h?: number | null
+          box_w?: number | null
+          box_x?: number | null
+          box_y?: number | null
+          created_at?: string
+          detector_score?: number | null
+          embedding?: number[]
+          face_index?: number
+          gender?: string | null
+          gender_probability?: number | null
+          id?: string
+          investigated_id?: string
+          model_version?: string
+          photo_url?: string
+          quality?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "face_embeddings_investigated_id_fkey"
+            columns: ["investigated_id"]
+            isOneToOne: false
+            referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investigateds: {
+        Row: {
+          avo_materna: string | null
+          avo_materno: string | null
+          avo_paterna: string | null
+          avo_paterno: string | null
+          cidade: string | null
+          cpf: string | null
+          created_at: string
+          data_nascimento: string | null
+          data_obito: string | null
+          descricao: string | null
+          documentos: Json
+          email: string | null
+          emails: Json
+          endereco: string | null
+          estado: string | null
+          facebook: string | null
+          foto_url: string | null
+          fotos: Json
+          id: string
+          idade: number | null
+          instagram: string | null
+          irmaos: string | null
+          irmas: string | null
+          linkedin: string | null
+          nome: string
+          nome_mae: string | null
+          nome_pai: string | null
+          obito: boolean
+          observacoes: string | null
+          outras_redes: string | null
+          pais: string | null
+          rg: string | null
+          status: string
+          telefone: string | null
+          telefones: Json
+          tias: string | null
+          tiktok: string | null
+          tios: string | null
+          twitter: string | null
+          updated_at: string
+          user_id: string
+          youtube: string | null
+        }
+        Insert: {
+          avo_materna?: string | null
+          avo_materno?: string | null
+          avo_paterna?: string | null
+          avo_paterno?: string | null
+          cidade?: string | null
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          data_obito?: string | null
+          descricao?: string | null
+          documentos?: Json
+          email?: string | null
+          emails?: Json
+          endereco?: string | null
+          estado?: string | null
+          facebook?: string | null
+          foto_url?: string | null
+          fotos?: Json
+          id?: string
+          idade?: number | null
+          instagram?: string | null
+          irmaos?: string | null
+          irmas?: string | null
+          linkedin?: string | null
+          nome: string
+          nome_mae?: string | null
+          nome_pai?: string | null
+          obito?: boolean
+          observacoes?: string | null
+          outras_redes?: string | null
+          pais?: string | null
+          rg?: string | null
+          status?: string
+          telefone?: string | null
+          telefones?: Json
+          tias?: string | null
+          tiktok?: string | null
+          tios?: string | null
+          twitter?: string | null
+          updated_at?: string
+          user_id: string
+          youtube?: string | null
+        }
+        Update: {
+          avo_materna?: string | null
+          avo_materno?: string | null
+          avo_paterna?: string | null
+          avo_paterno?: string | null
+          cidade?: string | null
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          data_obito?: string | null
+          descricao?: string | null
+          documentos?: Json
+          email?: string | null
+          emails?: Json
+          endereco?: string | null
+          estado?: string | null
+          facebook?: string | null
+          foto_url?: string | null
+          fotos?: Json
+          id?: string
+          idade?: number | null
+          instagram?: string | null
+          irmaos?: string | null
+          irmas?: string | null
+          linkedin?: string | null
+          nome?: string
+          nome_mae?: string | null
+          nome_pai?: string | null
+          obito?: boolean
+          observacoes?: string | null
+          outras_redes?: string | null
+          pais?: string | null
+          rg?: string | null
+          status?: string
+          telefone?: string | null
+          telefones?: Json
+          tias?: string | null
+          tiktok?: string | null
+          tios?: string | null
+          twitter?: string | null
+          updated_at?: string
+          user_id?: string
+          youtube?: string | null
+        }
+        Relationships: []
+      }
+      panel_nodes: {
+        Row: {
+          board_id: string
+          created_at: string
+          id: string
+          investigated_id: string
+          pos_x: number
+          pos_y: number
+          user_id: string
+        }
+        Insert: {
+          board_id: string
+          created_at?: string
+          id?: string
+          investigated_id: string
+          pos_x?: number
+          pos_y?: number
+          user_id: string
+        }
+        Update: {
+          board_id?: string
+          created_at?: string
+          id?: string
+          investigated_id?: string
+          pos_x?: number
+          pos_y?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "panel_nodes_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "boards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "panel_nodes_investigated_id_fkey"
+            columns: ["investigated_id"]
+            isOneToOne: false
+            referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      share_links: {
+        Row: {
+          created_at: string
+          expires_at: string
+          fields: Json
+          id: string
+          investigated_id: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          fields?: Json
+          id?: string
+          investigated_id: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          fields?: Json
+          id?: string
+          investigated_id?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_links_investigated_id_fkey"
+            columns: ["investigated_id"]
+            isOneToOne: false
+            referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uploads: {
+        Row: {
+          created_at: string
+          id: string
+          investigated_id: string | null
+          mime: string | null
+          nome: string
+          storage_path: string
+          tamanho: number | null
+          tipo: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          investigated_id?: string | null
+          mime?: string | null
+          nome: string
+          storage_path: string
+          tamanho?: number | null
+          tipo: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          investigated_id?: string | null
+          mime?: string | null
+          nome?: string
+          storage_path?: string
+          tamanho?: number | null
+          tipo?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploads_investigated_id_fkey"
+            columns: ["investigated_id"]
+            isOneToOne: false
+            referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
