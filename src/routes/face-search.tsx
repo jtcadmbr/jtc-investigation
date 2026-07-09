@@ -128,6 +128,8 @@ function Page() {
       setQueryUrl(r.result as string);
       setQueryFace(null);
       setMatches(null);
+      setGroups(null);
+      setCandidates([]);
       setScanProgress(0);
       setScanPhase("none");
       setScanLogs([]);
