@@ -153,8 +153,8 @@ export function InvestigadoForm({ initial, onClose, onSaved }: { initial?: any; 
     const path = `${user.id}/${Date.now()}-${crypto.randomUUID()}.jpg`;
     const up = await supabase.storage.from("uploads").upload(path, blob, { contentType: "image/jpeg", upsert: false });
     if (up.error) return toast.error(up.error.message);
-    const { data: pub } = supabase.storage.from("uploads").getPublicUrl(path);
-    const url = pub.publicUrl;
+    const { data: signed } = await supabase.storage.from("uploads").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+    const url = signed?.signedUrl ?? "";
     await supabase.from("uploads").insert({
       user_id: user.id,
       nome: `foto-${form.nome || "pessoa"}-${Date.now()}.jpg`,
@@ -188,8 +188,8 @@ export function InvestigadoForm({ initial, onClose, onSaved }: { initial?: any; 
       const path = `${user.id}/doc-${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const up = await supabase.storage.from("uploads").upload(path, file, { contentType: file.type, upsert: false });
       if (up.error) return toast.error(up.error.message);
-      const { data: pub } = supabase.storage.from("uploads").getPublicUrl(path);
-      const url = pub.publicUrl;
+      const { data: signed } = await supabase.storage.from("uploads").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      const url = signed?.signedUrl ?? "";
       await supabase.from("uploads").insert({
         user_id: user.id,
         nome: `doc-${form.nome || "pessoa"}-${Date.now()}.${ext}`,
