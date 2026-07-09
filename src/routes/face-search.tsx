@@ -230,6 +230,7 @@ function Page() {
     if (!queryUrl || !modelsReady || !queryFace) return;
     setScanning(true);
     setMatches(null);
+    setGroups(null);
     setScanProgress(5);
     setScanPhase("landmarks");
     setScanLogs(["[SISTEMA] Iniciando varredura biométrica facial...", "[OK] Carregando imagem de entrada..."]);
