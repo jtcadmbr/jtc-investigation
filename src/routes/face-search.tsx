@@ -387,6 +387,94 @@ function Page() {
     }
   }
 
+  function matchFace(face: FaceCandidate, allRows: EmbeddingRow[], peopleById: Map<string, Person>): Match[] {
+    const results: Match[] = [];
+    for (const r of allRows) {
+      const person = peopleById.get(r.investigated_id);
+      if (!person) continue;
+      if (face.gender && r.gender) {
+        const qp = face.genderProbability ?? 1;
+        const rp = r.gender_probability ?? 1;
+        if (qp >= 0.65 && rp >= 0.65 && face.gender !== r.gender) continue;
+      }
+      if (face.age && r.age) {
+        if (Math.abs(face.age - r.age) > 25) continue;
+      }
+      const d = distance(face.descriptor, r.embedding);
+      const { sim, quality, confidence } = rank(d, face.quality, r.quality);
+      results.push({ person, matchedUrl: r.photo_url, dist: d, sim, quality, confidence, gender: r.gender, age: r.age });
+    }
+    const best = new Map<string, Match>();
+    for (const m of results) {
+      const cur = best.get(m.person.id);
+      if (!cur || m.confidence > cur.confidence || (m.confidence === cur.confidence && m.dist < cur.dist)) {
+        best.set(m.person.id, m);
+      }
+    }
+    return Array.from(best.values()).sort((a, b) => b.confidence - a.confidence || a.dist - b.dist);
+  }
+
+  async function scanAll() {
+    if (!queryUrl || !modelsReady || candidates.length === 0) return;
+    setScanning(true);
+    setMatches(null);
+    setGroups(null);
+    setScanProgress(10);
+    setScanPhase("matching");
+    setScanLogs([`[SISTEMA] Análise multi-face iniciada: ${candidates.length} rostos detectados`]);
+    try {
+      const { data: rows, error } = await supabase
+        .from("face_embeddings")
+        .select("id,investigated_id,photo_url,face_index,embedding,quality,gender,gender_probability,age")
+        .eq("model_version", MODEL_VERSION);
+      if (error) throw error;
+      const { data: peopleData } = await supabase
+        .from("investigateds")
+        .select("id,nome,status,foto_url,fotos");
+      const peopleById = new Map<string, Person>();
+      for (const p of peopleData || []) peopleById.set(p.id, p as any);
+
+      // Index pending photos
+      const indexedUrls = new Set((rows || []).map((r: any) => r.investigated_id + "|" + r.photo_url));
+      const pending: { personId: string; url: string }[] = [];
+      for (const p of peopleData || []) {
+        const urls = [p.foto_url, ...(Array.isArray(p.fotos) ? p.fotos : [])].filter(
+          (u): u is string => typeof u === "string" && !!u,
+        );
+        for (const u of urls) if (!indexedUrls.has(p.id + "|" + u)) pending.push({ personId: p.id, url: u });
+      }
+      const allRows: EmbeddingRow[] = (rows as any) || [];
+      if (pending.length) {
+        setScanLogs((prev) => [...prev, `[SISTEMA] Indexando ${pending.length} imagens pendentes...`]);
+        for (let i = 0; i < pending.length; i += 3) {
+          const batch = pending.slice(i, i + 3);
+          const results = await Promise.all(batch.map((j) => ensurePhotoIndexed(j.personId, j.url).catch(() => [])));
+          for (const r of results) allRows.push(...r);
+        }
+      }
+
+      setScanProgress(60);
+      const gs: FaceGroup[] = candidates.map((face, idx) => ({
+        face,
+        faceIndex: idx,
+        matches: matchFace(face, allRows, peopleById),
+      }));
+      setScanLogs((prev) => [
+        ...prev,
+        ...gs.map((g) => `[OK] Rosto ${g.faceIndex + 1}: ${g.matches.length} candidato(s), melhor ${(g.matches[0]?.confidence ?? 0 * 100).toFixed?.(0) || 0}%`),
+      ]);
+      setScanProgress(100);
+      setScanPhase("done");
+      await new Promise((r) => setTimeout(r, 150));
+      setGroups(gs);
+      refreshStats();
+    } catch (e: any) {
+      toast.error(e.message || "Erro na busca");
+    } finally {
+      setScanning(false);
+    }
+  }
+
   const filtered = useMemo(
     () => matches?.filter((m) => m.dist <= threshold) ?? [],
     [matches, threshold],
