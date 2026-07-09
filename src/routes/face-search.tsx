@@ -44,6 +44,12 @@ type Match = {
   age?: number | null;
 };
 
+type FaceGroup = {
+  face: FaceCandidate;
+  faceIndex: number;
+  matches: Match[];
+};
+
 function rank(dist: number, qq: number, tq: number) {
   const sim = similarity(dist);
   const quality = Math.min(qq, tq);
@@ -60,6 +66,8 @@ function Page() {
   const [loadingModels, setLoadingModels] = useState(true);
   const [queryUrl, setQueryUrl] = useState<string | null>(null);
   const [queryFace, setQueryFace] = useState<FaceCandidate | null>(null);
+  const [candidates, setCandidates] = useState<FaceCandidate[]>([]);
+  const [groups, setGroups] = useState<FaceGroup[] | null>(null);
   const [scanning, setScanning] = useState(false);
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [threshold, setThreshold] = useState(0.58); // Sensibilidade padrão mais rigorosa e precisa
