@@ -5,6 +5,7 @@ import { Upload, ScanFace, AlertCircle, Eye, X, Database, RefreshCw, Activity, S
 import { AppShell } from "@/components/AppShell";
 import { FaceSelector } from "@/components/FaceSelector";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import {
   distance,
@@ -54,6 +55,7 @@ function rank(dist: number, qq: number, tq: number) {
 }
 
 function Page() {
+  const { user } = useAuth();
   const [modelsReady, setModelsReady] = useState(false);
   const [loadingModels, setLoadingModels] = useState(true);
   const [queryUrl, setQueryUrl] = useState<string | null>(null);
@@ -126,6 +128,7 @@ function Page() {
   };
 
   async function ensurePhotoIndexed(personId: string, url: string): Promise<EmbeddingRow[]> {
+    if (!user) return [];
     const { data: existing } = await supabase
       .from("face_embeddings")
       .select("*")
@@ -138,6 +141,7 @@ function Page() {
     if (!candidates.length) return [];
 
     const rows = candidates.map((c, i) => ({
+      user_id: user.id,
       investigated_id: personId,
       photo_url: url,
       face_index: i,
