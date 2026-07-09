@@ -6,9 +6,10 @@ import { getFaceCandidates, loadFaceModels, type FaceCandidate } from "@/lib/fac
 type Props = {
   imageUrl: string;
   onPick: (candidate: FaceCandidate | null) => void;
+  onCandidates?: (list: FaceCandidate[]) => void;
 };
 
-export function FaceSelector({ imageUrl, onPick }: Props) {
+export function FaceSelector({ imageUrl, onPick, onCandidates }: Props) {
   const [candidates, setCandidates] = useState<FaceCandidate[] | null>(null);
   const [picked, setPicked] = useState<number>(-1);
   const [scanning, setScanning] = useState(true);
@@ -25,6 +26,7 @@ export function FaceSelector({ imageUrl, onPick }: Props) {
       .then((list) => {
         if (cancel) return;
         setCandidates(list);
+        onCandidates?.(list);
         if (list.length === 1) {
           setPicked(0);
           onPick(list[0]);

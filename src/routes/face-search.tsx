@@ -44,6 +44,12 @@ type Match = {
   age?: number | null;
 };
 
+type FaceGroup = {
+  face: FaceCandidate;
+  faceIndex: number;
+  matches: Match[];
+};
+
 function rank(dist: number, qq: number, tq: number) {
   const sim = similarity(dist);
   const quality = Math.min(qq, tq);
@@ -60,6 +66,8 @@ function Page() {
   const [loadingModels, setLoadingModels] = useState(true);
   const [queryUrl, setQueryUrl] = useState<string | null>(null);
   const [queryFace, setQueryFace] = useState<FaceCandidate | null>(null);
+  const [candidates, setCandidates] = useState<FaceCandidate[]>([]);
+  const [groups, setGroups] = useState<FaceGroup[] | null>(null);
   const [scanning, setScanning] = useState(false);
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [threshold, setThreshold] = useState(0.58); // Sensibilidade padrão mais rigorosa e precisa
@@ -120,6 +128,8 @@ function Page() {
       setQueryUrl(r.result as string);
       setQueryFace(null);
       setMatches(null);
+      setGroups(null);
+      setCandidates([]);
       setScanProgress(0);
       setScanPhase("none");
       setScanLogs([]);
@@ -220,6 +230,7 @@ function Page() {
     if (!queryUrl || !modelsReady || !queryFace) return;
     setScanning(true);
     setMatches(null);
+    setGroups(null);
     setScanProgress(5);
     setScanPhase("landmarks");
     setScanLogs(["[SISTEMA] Iniciando varredura biométrica facial...", "[OK] Carregando imagem de entrada..."]);
@@ -376,6 +387,94 @@ function Page() {
     }
   }
 
+  function matchFace(face: FaceCandidate, allRows: EmbeddingRow[], peopleById: Map<string, Person>): Match[] {
+    const results: Match[] = [];
+    for (const r of allRows) {
+      const person = peopleById.get(r.investigated_id);
+      if (!person) continue;
+      if (face.gender && r.gender) {
+        const qp = face.genderProbability ?? 1;
+        const rp = r.gender_probability ?? 1;
+        if (qp >= 0.65 && rp >= 0.65 && face.gender !== r.gender) continue;
+      }
+      if (face.age && r.age) {
+        if (Math.abs(face.age - r.age) > 25) continue;
+      }
+      const d = distance(face.descriptor, r.embedding);
+      const { sim, quality, confidence } = rank(d, face.quality, r.quality);
+      results.push({ person, matchedUrl: r.photo_url, dist: d, sim, quality, confidence, gender: r.gender, age: r.age });
+    }
+    const best = new Map<string, Match>();
+    for (const m of results) {
+      const cur = best.get(m.person.id);
+      if (!cur || m.confidence > cur.confidence || (m.confidence === cur.confidence && m.dist < cur.dist)) {
+        best.set(m.person.id, m);
+      }
+    }
+    return Array.from(best.values()).sort((a, b) => b.confidence - a.confidence || a.dist - b.dist);
+  }
+
+  async function scanAll() {
+    if (!queryUrl || !modelsReady || candidates.length === 0) return;
+    setScanning(true);
+    setMatches(null);
+    setGroups(null);
+    setScanProgress(10);
+    setScanPhase("matching");
+    setScanLogs([`[SISTEMA] Análise multi-face iniciada: ${candidates.length} rostos detectados`]);
+    try {
+      const { data: rows, error } = await supabase
+        .from("face_embeddings")
+        .select("id,investigated_id,photo_url,face_index,embedding,quality,gender,gender_probability,age")
+        .eq("model_version", MODEL_VERSION);
+      if (error) throw error;
+      const { data: peopleData } = await supabase
+        .from("investigateds")
+        .select("id,nome,status,foto_url,fotos");
+      const peopleById = new Map<string, Person>();
+      for (const p of peopleData || []) peopleById.set(p.id, p as any);
+
+      // Index pending photos
+      const indexedUrls = new Set((rows || []).map((r: any) => r.investigated_id + "|" + r.photo_url));
+      const pending: { personId: string; url: string }[] = [];
+      for (const p of peopleData || []) {
+        const urls = [p.foto_url, ...(Array.isArray(p.fotos) ? p.fotos : [])].filter(
+          (u): u is string => typeof u === "string" && !!u,
+        );
+        for (const u of urls) if (!indexedUrls.has(p.id + "|" + u)) pending.push({ personId: p.id, url: u });
+      }
+      const allRows: EmbeddingRow[] = (rows as any) || [];
+      if (pending.length) {
+        setScanLogs((prev) => [...prev, `[SISTEMA] Indexando ${pending.length} imagens pendentes...`]);
+        for (let i = 0; i < pending.length; i += 3) {
+          const batch = pending.slice(i, i + 3);
+          const results = await Promise.all(batch.map((j) => ensurePhotoIndexed(j.personId, j.url).catch(() => [])));
+          for (const r of results) allRows.push(...r);
+        }
+      }
+
+      setScanProgress(60);
+      const gs: FaceGroup[] = candidates.map((face, idx) => ({
+        face,
+        faceIndex: idx,
+        matches: matchFace(face, allRows, peopleById),
+      }));
+      setScanLogs((prev) => [
+        ...prev,
+        ...gs.map((g) => `[OK] Rosto ${g.faceIndex + 1}: ${g.matches.length} candidato(s), melhor ${(g.matches[0]?.confidence ?? 0 * 100).toFixed?.(0) || 0}%`),
+      ]);
+      setScanProgress(100);
+      setScanPhase("done");
+      await new Promise((r) => setTimeout(r, 150));
+      setGroups(gs);
+      refreshStats();
+    } catch (e: any) {
+      toast.error(e.message || "Erro na busca");
+    } finally {
+      setScanning(false);
+    }
+  }
+
   const filtered = useMemo(
     () => matches?.filter((m) => m.dist <= threshold) ?? [],
     [matches, threshold],
@@ -445,11 +544,17 @@ function Page() {
             <div>
               {queryUrl ? (
                 <div className="relative">
-                  <FaceSelector imageUrl={queryUrl} onPick={setQueryFace} />
+                  <FaceSelector
+                    imageUrl={queryUrl}
+                    onPick={setQueryFace}
+                    onCandidates={setCandidates}
+                  />
                   <button
                     onClick={() => {
                       setQueryUrl(null);
                       setQueryFace(null);
+                      setCandidates([]);
+                      setGroups(null);
                       setMatches(null);
                       setScanProgress(0);
                       setScanPhase("none");
@@ -522,6 +627,17 @@ function Page() {
                 <ScanFace size={18} />
                 {scanning ? "Analisando derme..." : queryFace ? "Iniciar Busca Forense" : "Selecione um rosto"}
               </button>
+
+              {candidates.length > 1 && (
+                <button
+                  onClick={scanAll}
+                  disabled={!modelsReady || scanning}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-primary/40 bg-primary/10 text-primary font-semibold text-xs hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  <ScanFace size={14} />
+                  {scanning ? "Processando..." : `Buscar todos os ${candidates.length} rostos`}
+                </button>
+              )}
 
               {queryFace && !scanning && (
                 <div className="text-xs space-y-1.5 p-3 rounded-lg bg-primary/5 border border-primary/20">
@@ -671,7 +787,111 @@ function Page() {
           )}
         </AnimatePresence>
 
-        {matches && !scanning && (
+        {groups && !scanning && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-primary">
+              <Activity size={14} className="animate-pulse" />
+              Análise multi-face · {groups.length} rosto(s) processado(s)
+            </div>
+            {groups.map((g) => {
+              const top = g.matches[0];
+              const others = g.matches.filter((m) => m.dist <= threshold && (!top || m.person.id !== top.person.id));
+              return (
+                <motion.div
+                  key={g.faceIndex}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-3xl border-2 border-primary/60 bg-card/85 p-5 glow"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-primary font-bold">
+                      <span className="h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
+                        {g.faceIndex + 1}
+                      </span>
+                      Rosto {g.faceIndex + 1} · qualidade {g.face.qualityLabel}
+                      {g.face.gender && (
+                        <span className="text-muted-foreground normal-case tracking-normal">
+                          · {g.face.gender === "male" ? "masc." : "fem."} · ~{g.face.age?.toFixed(0)}a
+                        </span>
+                      )}
+                    </div>
+                    {top && (
+                      <span
+                        className={`text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full font-bold border ${
+                          top.confidence >= 0.7
+                            ? "bg-primary/20 text-primary border-primary/40"
+                            : top.confidence >= 0.55
+                              ? "bg-accent/20 text-accent border-accent/40"
+                              : "bg-destructive/20 text-destructive border-destructive/40"
+                        }`}
+                      >
+                        {(top.confidence * 100).toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+
+                  {top ? (
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={top.matchedUrl}
+                        alt={top.person.nome}
+                        className="h-20 w-20 rounded-xl object-cover border-2 border-primary/40 bg-black shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold truncate">{top.person.nome}</h3>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">
+                          Status: {top.person.status || "sem status"} · sim {(top.sim * 100).toFixed(1)}% · dist {top.dist.toFixed(3)}
+                        </p>
+                        {top.dist > threshold && (
+                          <p className="text-[10px] text-destructive font-mono mt-1">
+                            abaixo do limite ({threshold}) — exibido por ser a maior confiança
+                          </p>
+                        )}
+                      </div>
+                      <Link
+                        to="/investigados/$id"
+                        params={{ id: top.person.id }}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 transition shrink-0"
+                      >
+                        <Eye size={14} /> Abrir Ficha
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-xs text-muted-foreground font-mono">
+                      Nenhuma correspondência para este rosto.
+                    </div>
+                  )}
+
+                  {!topOnly && others.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                        outros candidatos ({others.length})
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {others.slice(0, 8).map((m) => (
+                          <Link
+                            key={m.person.id + m.matchedUrl}
+                            to="/investigados/$id"
+                            params={{ id: m.person.id }}
+                            className="flex items-center gap-2 p-2 rounded-lg border border-border hover:border-primary/60 transition"
+                          >
+                            <img src={m.matchedUrl} alt="" className="h-9 w-9 rounded-md object-cover shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <div className="text-[11px] font-semibold truncate">{m.person.nome}</div>
+                              <div className="text-[9px] text-primary font-mono">{(m.confidence * 100).toFixed(0)}%</div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+
+        {matches && !scanning && !groups && (
           <div className="space-y-6">
             {/* 1) Destaque do Suspeito de Maior Confiança */}
             {matches.length > 0 && (
