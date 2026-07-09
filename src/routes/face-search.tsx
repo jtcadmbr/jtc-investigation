@@ -499,6 +499,21 @@ function Page() {
                 </div>
               </div>
 
+              <label className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={topOnly}
+                  onChange={(e) => setTopOnly(e.target.checked)}
+                  className="mt-0.5 accent-[oklch(0.65_0.22_250)]"
+                />
+                <div className="flex-1">
+                  <div className="text-xs font-semibold">Somente maior confiança</div>
+                  <div className="text-[10px] text-muted-foreground leading-snug">
+                    Exibe apenas o candidato de maior similaridade. Desmarque para ver todas as correspondências possíveis.
+                  </div>
+                </div>
+              </label>
+
               <button
                 onClick={scan}
                 disabled={!queryFace || !modelsReady || scanning}
