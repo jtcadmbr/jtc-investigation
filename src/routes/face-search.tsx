@@ -779,6 +779,7 @@ function Page() {
             )}
 
             {/* Outros Candidatos */}
+            {!topOnly && (
             <div>
               <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
                 <h3 className="font-bold text-sm font-mono text-muted-foreground uppercase tracking-wider">
