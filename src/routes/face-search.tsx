@@ -264,18 +264,27 @@ function Page() {
         const person = peopleById.get(r.investigated_id);
         if (!person) continue;
 
-        // VALIDAÇÃO DE GÊNERO: Impede pareamentos cruzados inadequados (ex: homem pareando com mulher)
-        let genderCompatible = true;
-        if (queryFace.gender && r.gender && queryFace.genderProbability && r.gender_probability) {
-          // Se a inteligência artificial tem alta certeza (>80%) do gênero em ambos e eles diferem, descartamos
-          if (queryFace.genderProbability > 0.8 && r.gender_probability > 0.8) {
-            if (queryFace.gender !== r.gender) {
-              genderCompatible = false;
-            }
+        // ================================================================
+        // FILTRO BIOMÉTRICO RÍGIDO — impede match entre gêneros diferentes.
+        // Regra: se AMBOS os lados têm gênero estimado com confiança >= 65%
+        // e são diferentes, o candidato é DESCARTADO imediatamente.
+        // Isso resolve o falso positivo clássico (foto de homem batendo
+        // com registro de mulher, e vice-versa).
+        // ================================================================
+        if (queryFace.gender && r.gender) {
+          const qp = queryFace.genderProbability ?? 1;
+          const rp = r.gender_probability ?? 1;
+          if (qp >= 0.65 && rp >= 0.65 && queryFace.gender !== r.gender) {
+            continue;
           }
         }
 
-        if (!genderCompatible) continue;
+        // Filtro secundário: diferença de idade forense absurda (>25 anos)
+        // com ambas estimativas conhecidas → descarta.
+        if (queryFace.age && r.age) {
+          const ageGap = Math.abs(queryFace.age - r.age);
+          if (ageGap > 25) continue;
+        }
 
         const d = distance(queryFace.descriptor, r.embedding);
         const { sim, quality, confidence } = rank(d, queryFace.quality, r.quality);
