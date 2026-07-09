@@ -63,6 +63,7 @@ function Page() {
   const [scanning, setScanning] = useState(false);
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [threshold, setThreshold] = useState(0.58); // Sensibilidade padrão mais rigorosa e precisa
+  const [topOnly, setTopOnly] = useState(true); // por padrão, mostra apenas o resultado de maior confiança
   const [indexStats, setIndexStats] = useState<{ indexed: number; total: number } | null>(null);
   const [indexing, setIndexing] = useState(false);
   const [indexProgress, setIndexProgress] = useState({ done: 0, total: 0 });
@@ -436,7 +437,7 @@ function Page() {
           {loadingModels && (
             <div className="text-xs text-muted-foreground flex items-center gap-2 mb-3 bg-primary/5 p-3 rounded-lg border border-primary/10">
               <div className="h-3 w-3 rounded-full border border-primary border-t-transparent animate-spin" />
-              Carregando rede neural e estimadores de gênero/idade (~9MB)...
+              Carregando rede neural estendida + estimadores de gênero/idade (~13MB)...
             </div>
           )}
 
@@ -497,6 +498,21 @@ function Page() {
                   <span>Mais permissivo</span>
                 </div>
               </div>
+
+              <label className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={topOnly}
+                  onChange={(e) => setTopOnly(e.target.checked)}
+                  className="mt-0.5 accent-[oklch(0.65_0.22_250)]"
+                />
+                <div className="flex-1">
+                  <div className="text-xs font-semibold">Somente maior confiança</div>
+                  <div className="text-[10px] text-muted-foreground leading-snug">
+                    Exibe apenas o candidato de maior similaridade. Desmarque para ver todas as correspondências possíveis.
+                  </div>
+                </div>
+              </label>
 
               <button
                 onClick={scan}
@@ -763,6 +779,7 @@ function Page() {
             )}
 
             {/* Outros Candidatos */}
+            {!topOnly && (
             <div>
               <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
                 <h3 className="font-bold text-sm font-mono text-muted-foreground uppercase tracking-wider">
@@ -827,6 +844,7 @@ function Page() {
                 </div>
               )}
             </div>
+            )}
           </div>
         )}
 
