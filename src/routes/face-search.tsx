@@ -437,7 +437,7 @@ function Page() {
           {loadingModels && (
             <div className="text-xs text-muted-foreground flex items-center gap-2 mb-3 bg-primary/5 p-3 rounded-lg border border-primary/10">
               <div className="h-3 w-3 rounded-full border border-primary border-t-transparent animate-spin" />
-              Carregando rede neural e estimadores de gênero/idade (~9MB)...
+              Carregando rede neural estendida + estimadores de gênero/idade (~13MB)...
             </div>
           )}
 
