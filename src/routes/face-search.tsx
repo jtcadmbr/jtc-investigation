@@ -63,6 +63,7 @@ function Page() {
   const [scanning, setScanning] = useState(false);
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [threshold, setThreshold] = useState(0.58); // Sensibilidade padrão mais rigorosa e precisa
+  const [topOnly, setTopOnly] = useState(true); // por padrão, mostra apenas o resultado de maior confiança
   const [indexStats, setIndexStats] = useState<{ indexed: number; total: number } | null>(null);
   const [indexing, setIndexing] = useState(false);
   const [indexProgress, setIndexProgress] = useState({ done: 0, total: 0 });
