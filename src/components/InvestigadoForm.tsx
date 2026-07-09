@@ -9,6 +9,7 @@ import { PhotoPicker } from "./PhotoPicker";
 import { PersonPicker } from "./PersonPicker";
 import { formatCPF, isValidCPF, formatRG, formatDateBR, brToISO, isoToBR, calcAge, formatPhoneBR } from "@/lib/format";
 import { BR_STATES } from "@/lib/br-states";
+import { getFaceCandidates, loadFaceModels } from "@/lib/face";
 
 const STATUSES = ["suspeito", "investigado", "testemunha", "familiar", "contato", "desaparecido", "sem_restricao", "desconhecido"] as const;
 
@@ -166,6 +167,33 @@ export function InvestigadoForm({ initial, onClose, onSaved }: { initial?: any; 
     } else {
       set("foto_url", url);
       toast.success("Foto salva na galeria");
+      void autoFillBirthYearFromPhoto(url);
+    }
+  };
+
+  // Analisa a foto principal e, se ainda não houver data de nascimento,
+  // preenche automaticamente o ano estimado (01/01/ano) com base na
+  // idade forense retornada pelo modelo biométrico.
+  const autoFillBirthYearFromPhoto = async (url: string) => {
+    try {
+      if (form.data_nascimento) return; // não sobrescreve
+      await loadFaceModels();
+      const cands = await getFaceCandidates(url);
+      if (!cands.length) return;
+      const best = cands.sort((a, b) => b.quality - a.quality)[0];
+      const age = best.age;
+      if (!age || age < 1 || age > 110) return;
+      const year = new Date().getFullYear() - Math.round(age);
+      const br = `01/01/${year}`;
+      setDataBR(br);
+      const iso = brToISO(br);
+      if (iso) {
+        set("data_nascimento", iso);
+        set("idade", Math.round(age));
+        toast.info(`Ano de nascimento estimado: ${year} (${Math.round(age)} anos)`);
+      }
+    } catch {
+      // silencioso — apenas uma sugestão automática
     }
   };
 
