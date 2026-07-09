@@ -86,10 +86,11 @@ function Page() {
       const path = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const up = await supabase.storage.from("uploads").upload(path, file);
       if (up.error) { toast.error(up.error.message); continue; }
-      const { data: pub } = supabase.storage.from("uploads").getPublicUrl(path);
+      const { data: signed } = await supabase.storage.from("uploads").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      const url = signed?.signedUrl ?? "";
       await supabase.from("uploads").insert({
         user_id: user.id, nome: file.name, tipo: tipoOf(file.type),
-        mime: file.type, tamanho: file.size, storage_path: path, url: pub.publicUrl,
+        mime: file.type, tamanho: file.size, storage_path: path, url,
         investigated_id: activePessoa || null,
       });
     }
