@@ -4,7 +4,8 @@ import * as faceapi from "@vladmandic/face-api";
 const MODEL_URL = "https://vladmandic.github.io/face-api/model";
 
 // bump when we change the descriptor pipeline so cached vectors get re-indexed
-export const MODEL_VERSION = "vladmandic-mobilenet-v1-aug3-gender";
+// v4: threshold ArcFace-like recalibration + strict gender gate + age gate
+export const MODEL_VERSION = "vladmandic-mobilenet-v4-strict-gender";
 
 export type FaceMetrics = {
   symmetry: number;       // percentage 0-100
