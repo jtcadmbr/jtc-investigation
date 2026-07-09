@@ -544,11 +544,17 @@ function Page() {
             <div>
               {queryUrl ? (
                 <div className="relative">
-                  <FaceSelector imageUrl={queryUrl} onPick={setQueryFace} />
+                  <FaceSelector
+                    imageUrl={queryUrl}
+                    onPick={setQueryFace}
+                    onCandidates={setCandidates}
+                  />
                   <button
                     onClick={() => {
                       setQueryUrl(null);
                       setQueryFace(null);
+                      setCandidates([]);
+                      setGroups(null);
                       setMatches(null);
                       setScanProgress(0);
                       setScanPhase("none");
