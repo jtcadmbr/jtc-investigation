@@ -290,7 +290,7 @@ function Page() {
         if (queryFace.gender && r.gender) {
           const qp = queryFace.genderProbability ?? 1;
           const rp = r.gender_probability ?? 1;
-          if (qp >= 0.65 && rp >= 0.65 && queryFace.gender !== r.gender) {
+          if (qp >= 0.55 && rp >= 0.55 && queryFace.gender !== r.gender) {
             continue;
           }
         }
@@ -395,7 +395,7 @@ function Page() {
       if (face.gender && r.gender) {
         const qp = face.genderProbability ?? 1;
         const rp = r.gender_probability ?? 1;
-        if (qp >= 0.65 && rp >= 0.65 && face.gender !== r.gender) continue;
+        if (qp >= 0.55 && rp >= 0.55 && face.gender !== r.gender) continue;
       }
       if (face.age && r.age) {
         if (Math.abs(face.age - r.age) > 25) continue;
