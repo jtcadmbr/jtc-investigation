@@ -93,8 +93,8 @@ function qualityLabel(q: number): FaceCandidate["qualityLabel"] {
 }
 
 function prepareCanvas(img: HTMLImageElement, enhanced = false): HTMLCanvasElement {
-  const MAX = 1600;
-  const MIN = 800;
+  const MAX = 1920;
+  const MIN = 900;
   let w = img.naturalWidth;
   let h = img.naturalHeight;
   const longest = Math.max(w, h);
@@ -108,9 +108,27 @@ function prepareCanvas(img: HTMLImageElement, enhanced = false): HTMLCanvasEleme
   c.height = h;
   const ctx = c.getContext("2d")!;
   ctx.imageSmoothingQuality = "high";
-  if (enhanced) ctx.filter = "contrast(1.15) brightness(1.05) saturate(0.95)";
+  if (enhanced) ctx.filter = "contrast(1.18) brightness(1.06) saturate(0.95)";
   ctx.drawImage(img, 0, 0, w, h);
   return c;
+}
+
+function flipCanvas(src: HTMLCanvasElement): HTMLCanvasElement {
+  const c = document.createElement("canvas");
+  c.width = src.width;
+  c.height = src.height;
+  const ctx = c.getContext("2d")!;
+  ctx.translate(src.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(src, 0, 0);
+  return c;
+}
+
+function averageDescriptors(a: Float32Array, b: Float32Array): Float32Array {
+  const len = Math.min(a.length, b.length);
+  const out = new Float32Array(len);
+  for (let i = 0; i < len; i++) out[i] = (a[i] + b[i]) / 2;
+  return l2normalize(out);
 }
 
 // MediaPipe FaceMesh (468 pts) canonical indices used by Human
@@ -339,7 +357,38 @@ export async function getFaceCandidates(url: string): Promise<FaceCandidate[]> {
       const enh = prepareCanvas(img, true);
       list = await detectOn(enh, img);
     }
-    return dedupe(list);
+    const deduped = dedupe(list);
+    if (!deduped.length) return deduped;
+
+    // TTA (test-time augmentation): descritor do rosto original é fundido
+    // com o descritor do mesmo rosto na imagem espelhada horizontalmente.
+    // Reduz sensibilidade a pose/iluminação lateral e melhora precisão do
+    // matching sem exigir reindexação do banco (média em espaço L2 mantém
+    // compatibilidade com embeddings já armazenados).
+    try {
+      const flipped = flipCanvas(normal);
+      const flipList = await detectOn(flipped, img);
+      if (flipList.length) {
+        for (const c of deduped) {
+          const mirrorX = normal.width - c.center.x;
+          let best: FaceCandidate | null = null;
+          let bestD = Infinity;
+          for (const f of flipList) {
+            const dx = f.center.x - mirrorX;
+            const dy = f.center.y - c.center.y;
+            const d = Math.hypot(dx, dy);
+            const tol = Math.max(c.box.width, f.box.width) * 0.35;
+            if (d < tol && d < bestD) {
+              bestD = d;
+              best = f;
+            }
+          }
+          if (best) c.descriptor = averageDescriptors(c.descriptor, best.descriptor);
+        }
+      }
+    } catch {}
+
+    return deduped;
   } catch {
     return [];
   }
