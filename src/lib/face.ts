@@ -376,15 +376,22 @@ export function distance(a: Float32Array | number[], b: Float32Array | number[])
   return Math.max(0, 1 - cos);
 }
 
-// Curva calibrada para Human/MobileFaceNet:
-// mesma pessoa: cosine dist ~0.05-0.30 → similarity 85-99%
-// dúvida: 0.30-0.50 → 40-70%
-// diferente: >0.55 → <20%
+// Curva recalibrada para Human/MobileFaceNet (1024-d, L2-normalizado).
+// Na prática, mesma pessoa cai em cosine-distance 0.15–0.45 dependendo de
+// idade/pose/iluminação, e pessoas diferentes ficam acima de ~0.6.
+// A curva antiga era severa demais e derrubava match legítimo pra ~60%.
+//   d ≤ 0.15  → 100%   (praticamente idêntica)
+//   d ≈ 0.30  → ~93%   (mesma pessoa, condições OK)
+//   d ≈ 0.40  → ~80%   (mesma pessoa, condições ruins)
+//   d ≈ 0.50  → ~60%   (dúvida)
+//   d ≥ 0.72  → 0%     (diferente)
 export function similarity(d: number): number {
-  if (d <= 0.08) return 1;
-  if (d >= 0.6) return 0;
-  const x = (d - 0.08) / 0.52;
-  const s = 1 - Math.pow(x, 1.6);
+  const LOW = 0.15;
+  const HIGH = 0.72;
+  if (d <= LOW) return 1;
+  if (d >= HIGH) return 0;
+  const x = (d - LOW) / (HIGH - LOW);
+  const s = 1 - x * x;
   return Math.max(0, Math.min(1, s));
 }
 
