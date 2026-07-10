@@ -41,9 +41,14 @@ const humanConfig: Partial<Config> = {
   cacheSensitivity: 0,
   warmup: "none",
   debug: false,
+  filter: {
+    enabled: true,
+    equalization: true,
+    return: true,
+  } as any,
   face: {
     enabled: true,
-    detector: { rotation: true, maxDetected: 20, minConfidence: 0.2, return: false },
+    detector: { rotation: true, maxDetected: 20, minConfidence: 0.18, return: false, iouThreshold: 0.25 },
     mesh: { enabled: true },
     iris: { enabled: true },
     description: { enabled: true },

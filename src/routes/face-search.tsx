@@ -276,6 +276,27 @@ function Page() {
 
       // 3) Processa a correspondência dos embeddings com filtragem inteligente de gênero
       const results: Match[] = [];
+      // Template médio por pessoa (galeria) — L2 do vetor médio de todas
+      // as fotos indexadas da mesma pessoa. Reduz variação de pose/luz.
+      const galleryByPerson = new Map<string, EmbeddingRow[]>();
+      for (const r of allRows) {
+        const arr = galleryByPerson.get(r.investigated_id) || [];
+        arr.push(r);
+        galleryByPerson.set(r.investigated_id, arr);
+      }
+      const templateByPerson = new Map<string, { vec: number[]; quality: number; gender?: string | null; gender_probability?: number | null; age?: number | null }>();
+      for (const [pid, rows2] of galleryByPerson) {
+        if (rows2.length < 2) continue;
+        const len = rows2[0].embedding.length;
+        const sum = new Array(len).fill(0);
+        for (const r of rows2) for (let i = 0; i < len; i++) sum[i] += r.embedding[i];
+        let norm = 0;
+        for (let i = 0; i < len; i++) { sum[i] /= rows2.length; norm += sum[i] * sum[i]; }
+        norm = Math.sqrt(norm) || 1;
+        for (let i = 0; i < len; i++) sum[i] /= norm;
+        const q = rows2.reduce((a, r) => a + (r.quality || 0), 0) / rows2.length;
+        templateByPerson.set(pid, { vec: sum, quality: q, gender: rows2[0].gender, gender_probability: rows2[0].gender_probability, age: rows2[0].age });
+      }
       for (const r of allRows) {
         const person = peopleById.get(r.investigated_id);
         if (!person) continue;
@@ -303,11 +324,21 @@ function Page() {
         }
 
         const d = distance(queryFace.descriptor, r.embedding);
-        const { sim, quality, confidence } = rank(d, queryFace.quality, r.quality);
+        // Distância também contra o template médio da galeria da pessoa,
+        // se existir. Usamos o MENOR dos dois — o template estabiliza casos
+        // onde uma foto isolada tem pose/luz ruim, mas a média da galeria
+        // representa bem a identidade.
+        let dEff = d;
+        const tpl = templateByPerson.get(r.investigated_id);
+        if (tpl) {
+          const dTpl = distance(queryFace.descriptor, tpl.vec);
+          if (dTpl < dEff) dEff = dTpl;
+        }
+        const { sim, quality, confidence } = rank(dEff, queryFace.quality, r.quality);
         results.push({
           person,
           matchedUrl: r.photo_url,
-          dist: d,
+          dist: dEff,
           sim,
           quality,
           confidence,
