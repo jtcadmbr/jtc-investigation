@@ -288,6 +288,120 @@ function computeMetricsFromMesh(
     skinToneHex,
     goldenRatioDev,
     forensicFeatures: { interocularDist, noseWidth, mouthWidth, jawWidth },
+    extended: computeExtendedMetrics(mesh, canvas, box, {
+      faceHeight, faceWidth, interocularDist,
+    }),
+  };
+}
+
+function sampleRegion(
+  canvas: HTMLCanvasElement,
+  cx: number,
+  cy: number,
+  size: number,
+): { hex: string; r: number; g: number; b: number } | null {
+  try {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    const s = Math.max(3, Math.round(size));
+    const x = Math.max(0, Math.min(canvas.width - s, Math.round(cx - s / 2)));
+    const y = Math.max(0, Math.min(canvas.height - s, Math.round(cy - s / 2)));
+    const data = ctx.getImageData(x, y, s, s).data;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
+    }
+    if (!n) return null;
+    r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+    const toHex = (c: number) => c.toString(16).padStart(2, "0");
+    return { hex: `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase(), r, g, b };
+  } catch {
+    return null;
+  }
+}
+
+function computeExtendedMetrics(
+  mesh: number[][],
+  canvas: HTMLCanvasElement,
+  box: { x: number; y: number; width: number; height: number },
+  base: { faceHeight: number; faceWidth: number; interocularDist: number },
+): FaceMetrics["extended"] {
+  // Eyes (iris fallback: use inner+outer midpoint when iris landmarks missing)
+  const hasIris = mesh.length > 473;
+  const li = hasIris ? pt(mesh, IDX.leftIris) : {
+    x: (pt(mesh, IDX.leftEyeOuter).x + pt(mesh, IDX.leftEyeInner).x) / 2,
+    y: (pt(mesh, IDX.leftEyeOuter).y + pt(mesh, IDX.leftEyeInner).y) / 2,
+  };
+  const ri = hasIris ? pt(mesh, IDX.rightIris) : {
+    x: (pt(mesh, IDX.rightEyeOuter).x + pt(mesh, IDX.rightEyeInner).x) / 2,
+    y: (pt(mesh, IDX.rightEyeOuter).y + pt(mesh, IDX.rightEyeInner).y) / 2,
+  };
+  const irisSize = Math.max(4, base.interocularDist * 0.12);
+  const eyeL = sampleRegion(canvas, li.x, li.y, irisSize);
+  const eyeR = sampleRegion(canvas, ri.x, ri.y, irisSize);
+  const eyeColorHex = eyeL && eyeR
+    ? `#${Math.round((eyeL.r + eyeR.r) / 2).toString(16).padStart(2, "0")}${Math.round((eyeL.g + eyeR.g) / 2).toString(16).padStart(2, "0")}${Math.round((eyeL.b + eyeR.b) / 2).toString(16).padStart(2, "0")}`.toUpperCase()
+    : eyeL?.hex || eyeR?.hex || "#3A2E24";
+
+  const eyeOpennessL = dist(pt(mesh, IDX.leftEyeTop), pt(mesh, IDX.leftEyeBottom));
+  const eyeOpennessR = dist(pt(mesh, IDX.rightEyeTop), pt(mesh, IDX.rightEyeBottom));
+  const eyeWidth = dist(pt(mesh, IDX.leftEyeOuter), pt(mesh, IDX.leftEyeInner));
+  const openRatio = ((eyeOpennessL + eyeOpennessR) / 2) / (eyeWidth || 1);
+  const eyeOpenness = Math.max(0, Math.min(100, Math.round(openRatio * 260)));
+
+  // Mouth
+  const mouthCenterX = (pt(mesh, IDX.mouthLeft).x + pt(mesh, IDX.mouthRight).x) / 2;
+  const mouthCenterY = (pt(mesh, IDX.upperLipTop).y + pt(mesh, IDX.lowerLipBottom).y) / 2;
+  const mouthSample = sampleRegion(canvas, mouthCenterX, mouthCenterY, Math.max(6, base.interocularDist * 0.22));
+  const mouthColorHex = mouthSample?.hex || "#8A4B48";
+  const lipThickness = Math.round(
+    dist(pt(mesh, IDX.upperLipOuter), pt(mesh, IDX.upperLipTop)) +
+    dist(pt(mesh, IDX.lowerLipBottom), pt(mesh, IDX.lowerLipOuter)),
+  );
+
+  // Eyebrows
+  const browTopL = pt(mesh, IDX.leftBrowTop);
+  const browTopR = pt(mesh, IDX.rightBrowTop);
+  const eyeTopL = pt(mesh, IDX.leftEyeTop);
+  const eyeTopR = pt(mesh, IDX.rightEyeTop);
+  const browSize = Math.max(4, base.interocularDist * 0.14);
+  const browL = sampleRegion(canvas, browTopL.x, browTopL.y, browSize);
+  const browR = sampleRegion(canvas, browTopR.x, browTopR.y, browSize);
+  const eyebrowColorHex = browL && browR
+    ? `#${Math.round((browL.r + browR.r) / 2).toString(16).padStart(2, "0")}${Math.round((browL.g + browR.g) / 2).toString(16).padStart(2, "0")}${Math.round((browL.b + browR.b) / 2).toString(16).padStart(2, "0")}`.toUpperCase()
+    : browL?.hex || browR?.hex || "#3A2E24";
+  const eyebrowThickness = Math.round(
+    (Math.abs(eyeTopL.y - browTopL.y) + Math.abs(eyeTopR.y - browTopR.y)) / 2,
+  );
+
+  // Hair — sample above forehead, outside face box
+  const forehead = pt(mesh, IDX.forehead);
+  const hairY = Math.max(0, forehead.y - base.faceHeight * 0.18);
+  const hairSize = Math.max(6, base.faceWidth * 0.12);
+  const hair = sampleRegion(canvas, forehead.x, hairY, hairSize);
+  const hairColorHex = hair?.hex || "#2A1E14";
+
+  // Face shape
+  const heightWidthRatio = base.faceHeight / (base.faceWidth || 1);
+  const jawWidth = dist(pt(mesh, IDX.jawLeft), pt(mesh, IDX.jawRight));
+  const cheekWidth = base.faceWidth;
+  const jawCheekRatio = jawWidth / (cheekWidth || 1);
+  let faceShape: NonNullable<FaceMetrics["extended"]>["faceShape"] = "oval";
+  if (heightWidthRatio > 1.55) faceShape = "longo";
+  else if (heightWidthRatio < 1.2 && jawCheekRatio > 0.88) faceShape = "quadrado";
+  else if (heightWidthRatio < 1.2) faceShape = "redondo";
+  else if (jawCheekRatio < 0.72) faceShape = "coração";
+  else faceShape = "oval";
+
+  return {
+    eyeColorHex,
+    eyeOpenness,
+    mouthColorHex,
+    lipThickness,
+    eyebrowColorHex,
+    eyebrowThickness,
+    hairColorHex,
+    faceShape,
   };
 }
 
