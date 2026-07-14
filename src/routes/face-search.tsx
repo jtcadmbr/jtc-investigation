@@ -900,6 +900,76 @@ function Page() {
                       {scanProgress >= 75 && queryFace ? `~${queryFace.age?.toFixed(0)} anos` : "Calculando..."}
                     </h4>
                   </div>
+
+                  <div className="bg-primary/5 border border-primary/10 rounded-xl p-2.5 text-center">
+                    <span className="text-[9px] text-muted-foreground uppercase font-mono">Cor dos Olhos</span>
+                    <div className="flex items-center justify-center gap-1.5 mt-1">
+                      {scanProgress >= 50 && em ? (
+                        <>
+                          <div className="h-3 w-3 rounded-full border border-primary/20" style={{ backgroundColor: em.eyeColorHex }} />
+                          <span className="text-[11px] font-mono font-bold text-primary">{em.eyeColorHex}</span>
+                        </>
+                      ) : (
+                        <span className="text-xs font-mono text-muted-foreground">Lendo...</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-primary/5 border border-primary/10 rounded-xl p-2.5 text-center">
+                    <span className="text-[9px] text-muted-foreground uppercase font-mono">Cor do Cabelo</span>
+                    <div className="flex items-center justify-center gap-1.5 mt-1">
+                      {scanProgress >= 50 && em ? (
+                        <>
+                          <div className="h-3 w-3 rounded-full border border-primary/20" style={{ backgroundColor: em.hairColorHex }} />
+                          <span className="text-[11px] font-mono font-bold text-primary">{em.hairColorHex}</span>
+                        </>
+                      ) : (
+                        <span className="text-xs font-mono text-muted-foreground">Lendo...</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-primary/5 border border-primary/10 rounded-xl p-2.5 text-center">
+                    <span className="text-[9px] text-muted-foreground uppercase font-mono">Cor da Boca</span>
+                    <div className="flex items-center justify-center gap-1.5 mt-1">
+                      {scanProgress >= 50 && em ? (
+                        <>
+                          <div className="h-3 w-3 rounded-full border border-primary/20" style={{ backgroundColor: em.mouthColorHex }} />
+                          <span className="text-[11px] font-mono font-bold text-primary">{em.mouthColorHex}</span>
+                        </>
+                      ) : (
+                        <span className="text-xs font-mono text-muted-foreground">Lendo...</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-primary/5 border border-primary/10 rounded-xl p-2.5 text-center">
+                    <span className="text-[9px] text-muted-foreground uppercase font-mono">Sobrancelhas</span>
+                    <div className="flex items-center justify-center gap-1.5 mt-1">
+                      {scanProgress >= 50 && em ? (
+                        <>
+                          <div className="h-3 w-3 rounded-full border border-primary/20" style={{ backgroundColor: em.eyebrowColorHex }} />
+                          <span className="text-[11px] font-mono font-bold text-primary">{em.eyebrowThickness}px</span>
+                        </>
+                      ) : (
+                        <span className="text-xs font-mono text-muted-foreground">Lendo...</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-primary/5 border border-primary/10 rounded-xl p-2.5 text-center">
+                    <span className="text-[9px] text-muted-foreground uppercase font-mono">Formato do Rosto</span>
+                    <h4 className="text-xs font-bold font-mono text-primary mt-1 uppercase">
+                      {scanProgress >= 50 && em ? em.faceShape : "Analisando..."}
+                    </h4>
+                  </div>
+
+                  <div className="bg-primary/5 border border-primary/10 rounded-xl p-2.5 text-center">
+                    <span className="text-[9px] text-muted-foreground uppercase font-mono">Abertura Ocular</span>
+                    <h4 className="text-xs font-bold font-mono text-primary mt-1">
+                      {scanProgress >= 50 && em ? `${em.eyeOpenness}%` : "Lendo..."}
+                    </h4>
+                  </div>
                 </div>
 
                 {/* Console Log Logotipo */}
