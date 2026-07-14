@@ -17,6 +17,16 @@ export type FaceMetrics = {
     mouthWidth: number;
     jawWidth: number;
   };
+  extended?: {
+    eyeColorHex: string;
+    eyeOpenness: number;
+    mouthColorHex: string;
+    lipThickness: number;
+    eyebrowColorHex: string;
+    eyebrowThickness: number;
+    hairColorHex: string;
+    faceShape: "oval" | "redondo" | "quadrado" | "longo" | "coração";
+  };
 };
 
 export type FaceCandidate = {
