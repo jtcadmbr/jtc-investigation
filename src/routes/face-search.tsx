@@ -460,6 +460,9 @@ function Page() {
 
       await sleep(200);
       setMatches(sorted);
+      setDecisionIdx(0);
+      setConfirmed(null);
+      setRejectedIds(new Set());
       refreshStats();
     } catch (e: any) {
       toast.error(e.message || "Erro na busca");
