@@ -1096,105 +1096,50 @@ function Page() {
         )}
 
         {matches && !scanning && !groups && (
-          <div className="space-y-6">
-            {/* 1) Destaque do Suspeito de Maior Confiança */}
-            {matches.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-primary">
+              <Brain size={14} className="animate-pulse" />
+              Aprendizado ativo · {learnedCount} resposta(s) registradas neste operador
+            </div>
+
+            {/* Confirmado: mostra ficha e encerra */}
+            {confirmed && (
               <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-3xl border-2 border-primary bg-card/85 p-6 glow relative overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="rounded-3xl border-2 border-primary bg-card/85 p-6 glow"
               >
-                {/* Badge decorativa */}
-                <div className="absolute top-0 right-0 bg-primary/20 border-l border-b border-primary/30 px-3 py-1.5 rounded-bl-xl text-[10px] font-mono text-primary uppercase tracking-widest font-bold flex items-center gap-1">
-                  <Award size={12} /> Correspondência Principal
+                <div className="absolute-none flex items-center gap-2 mb-4 text-xs font-mono uppercase tracking-widest text-primary font-bold">
+                  <Award size={14} /> Correspondência Confirmada Pelo Operador
                 </div>
-
-                <div className="flex items-center gap-2 mb-5 text-xs font-semibold text-primary font-mono uppercase tracking-widest">
-                  <Activity size={14} className="animate-pulse" />
-                  Identificação Primária Detectada
-                </div>
-
-                <div className="grid md:grid-cols-[1fr_160px_1fr] gap-6 items-center">
-                  {/* Foto de busca original */}
+                <div className="grid md:grid-cols-[1fr_140px_1fr] gap-6 items-center">
                   <div className="flex flex-col items-center">
-                    <div className="relative rounded-2xl overflow-hidden border border-primary/30 bg-black aspect-square h-[200px] flex items-center justify-center">
-                      <img
-                        src={queryUrl!}
-                        alt="Busca"
-                        className="h-full w-full object-cover"
-                      />
-                      <div className="absolute bottom-2 bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded text-[9px] text-muted-foreground font-mono">
-                        Foto de Busca
-                      </div>
-                    </div>
+                    <img src={queryUrl!} alt="busca" className="rounded-2xl border border-primary/30 bg-black h-[200px] w-[200px] object-cover" />
+                    <span className="mt-2 text-[9px] text-muted-foreground font-mono uppercase">Foto de busca</span>
                   </div>
-
-                  {/* Informações de correspondência */}
-                  <div className="flex flex-col items-center justify-center text-center space-y-2.5">
-                    <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Confiança</span>
-                    <h2 className={`text-4xl font-black font-mono tracking-tighter ${
-                      matches[0].confidence >= 0.70 ? "text-primary shadow-[0_0_15px_oklch(0.65_0.22_250)]" : matches[0].confidence >= 0.55 ? "text-accent" : "text-destructive"
-                    }`}>
-                      {(matches[0].confidence * 100).toFixed(1)}%
-                    </h2>
-
-                    <div>
-                      {matches[0].confidence >= 0.70 ? (
-                        <span className="bg-primary/20 text-primary border border-primary/40 text-[9px] uppercase font-mono px-2.5 py-0.5 rounded-full font-bold">
-                          ALTA CONFIANÇA
-                        </span>
-                      ) : matches[0].confidence >= 0.55 ? (
-                        <span className="bg-accent/20 text-accent border border-accent/40 text-[9px] uppercase font-mono px-2.5 py-0.5 rounded-full font-bold">
-                          MÉDIA CONFIANÇA
-                        </span>
-                      ) : (
-                        <span className="bg-destructive/20 text-destructive border border-destructive/40 text-[9px] uppercase font-mono px-2.5 py-0.5 rounded-full font-bold">
-                          BAIXA CONFIANÇA
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="text-[9px] text-muted-foreground font-mono leading-relaxed mt-2">
-                      similaridade {(matches[0].sim * 100).toFixed(1)}%<br/>
-                      distância {matches[0].dist.toFixed(3)}
-                    </div>
-                  </div>
-
-                  {/* Foto correspondida no banco */}
-                  <div className="flex flex-col items-center">
-                    <div className="relative rounded-2xl overflow-hidden border border-primary/30 bg-black aspect-square h-[200px] flex items-center justify-center">
-                      <img
-                        src={matches[0].matchedUrl}
-                        alt="Match"
-                        className="h-full w-full object-cover"
-                      />
-                      <div className="absolute bottom-2 bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded text-[9px] text-muted-foreground font-mono">
-                        Registro no Banco
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {matches[0].dist > threshold && (
-                  <div className="mt-5 bg-destructive/10 border border-destructive/30 rounded-xl p-3 flex items-center gap-2 text-xs text-destructive">
-                    <ShieldAlert size={16} />
-                    <span>
-                      <b>Nota:</b> Esta correspondência está abaixo do limite de sensibilidade configurado ({threshold}). Exibida por ser a de maior confiança no banco.
+                  <div className="flex flex-col items-center text-center">
+                    <Check size={44} className="text-primary" />
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-primary mt-1">Match Confirmado</span>
+                    <span className="text-[9px] text-muted-foreground font-mono mt-1">
+                      confiança final {(confirmed.confidence * 100).toFixed(1)}%
                     </span>
                   </div>
-                )}
-
-                <div className="border-t border-primary/20 mt-6 pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex flex-col items-center">
+                    <img src={confirmed.matchedUrl} alt={confirmed.person.nome} className="rounded-2xl border border-primary/30 bg-black h-[200px] w-[200px] object-cover" />
+                    <span className="mt-2 text-[9px] text-muted-foreground font-mono uppercase">Registro no banco</span>
+                  </div>
+                </div>
+                <div className="border-t border-primary/20 mt-6 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-xl font-bold text-foreground">{matches[0].person.nome}</h3>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mt-0.5 font-mono">
-                      Status: {matches[0].person.status || "Sem Status Definido"}
+                    <h3 className="text-xl font-bold">{confirmed.person.nome}</h3>
+                    <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider mt-0.5">
+                      Status: {confirmed.person.status || "sem status"}
                     </p>
                   </div>
                   <Link
                     to="/investigados/$id"
-                    params={{ id: matches[0].person.id }}
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 hover:glow transition w-full sm:w-auto justify-center"
+                    params={{ id: confirmed.person.id }}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 hover:glow transition"
                   >
                     <Eye size={14} /> Abrir Ficha Investigativa
                   </Link>
@@ -1202,72 +1147,121 @@ function Page() {
               </motion.div>
             )}
 
-            {/* Outros Candidatos */}
-            {!topOnly && (
-            <div>
-              <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-                <h3 className="font-bold text-sm font-mono text-muted-foreground uppercase tracking-wider">
-                  Outras Correspondências Possíveis ({filtered.filter(m => m.person.id !== matches[0].person.id).length})
-                </h3>
-                {matches.length > filtered.length && (
-                  <span className="text-[10px] text-muted-foreground font-mono">
-                    {matches.length - filtered.length} correspondências de baixa confiança ocultas
-                  </span>
-                )}
-              </div>
+            {/* Carrossel de decisão */}
+            {!confirmed && currentCandidate && (
+              <motion.div
+                key={currentCandidate.person.id + decisionIdx}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-3xl border-2 border-primary/60 bg-card/85 p-6 glow relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 bg-primary/20 border-l border-b border-primary/30 px-3 py-1.5 rounded-bl-xl text-[10px] font-mono text-primary uppercase tracking-widest font-bold">
+                  Candidato {decisionIdx + 1} / {decisionQueue.length}
+                </div>
 
-              {filtered.filter((m) => m.person.id !== matches[0].person.id).length === 0 ? (
-                <div className="text-center py-8 border border-dashed border-border rounded-xl text-muted-foreground text-xs font-mono">
-                  Nenhum outro suspeito secundário passou no teste de sensibilidade.
+                <div className="flex items-center gap-2 mb-5 text-xs font-semibold text-primary font-mono uppercase tracking-widest">
+                  <Activity size={14} className="animate-pulse" />
+                  Essa é a pessoa?
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filtered
-                    .filter((m) => m.person.id !== matches[0].person.id)
-                    .map((m) => (
-                      <motion.div
-                        key={m.person.id + m.matchedUrl}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="rounded-2xl border border-primary/20 bg-card p-4 hover:border-primary/60 hover:glow transition flex flex-col justify-between"
-                      >
-                        <div className="flex gap-3">
-                          <img
-                            src={m.matchedUrl}
-                            alt={m.person.nome}
-                            className="h-16 w-16 rounded-xl object-cover border-2 border-primary/30 bg-black shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold truncate text-sm">{m.person.nome}</h4>
-                            <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-mono">
-                              {m.person.status}
-                            </p>
-                            <div className="mt-1.5">
-                              <div className="flex items-center justify-between text-[11px] font-mono">
-                                <span className="text-muted-foreground">Confiança</span>
-                                <span className="font-bold text-primary">{(m.confidence * 100).toFixed(1)}%</span>
-                              </div>
-                              <div className="h-1 bg-input rounded-full mt-0.5 overflow-hidden">
-                                <div
-                                  className="h-full bg-primary"
-                                  style={{ width: `${m.confidence * 100}%` }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <Link
-                          to="/investigados/$id"
-                          params={{ id: m.person.id }}
-                          className="mt-3 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs hover:bg-primary/20 transition font-semibold"
-                        >
-                          <Eye size={12} /> Abrir Ficha
-                        </Link>
-                      </motion.div>
-                    ))}
+
+                <div className="grid md:grid-cols-[1fr_180px_1fr] gap-6 items-center">
+                  <div className="flex flex-col items-center">
+                    <div className="rounded-2xl overflow-hidden border border-primary/30 bg-black h-[200px] w-[200px]">
+                      <img src={queryUrl!} alt="busca" className="h-full w-full object-cover" />
+                    </div>
+                    <span className="mt-2 text-[9px] text-muted-foreground font-mono uppercase">Foto de busca</span>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center text-center space-y-2">
+                    <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Confiança</span>
+                    <h2 className={`text-5xl font-black font-mono tracking-tighter ${
+                      currentCandidate.confidence >= 0.70 ? "text-primary" : currentCandidate.confidence >= 0.55 ? "text-accent" : "text-destructive"
+                    }`}>
+                      {(currentCandidate.confidence * 100).toFixed(1)}%
+                    </h2>
+                    <div className="text-[9px] text-muted-foreground font-mono leading-relaxed">
+                      similaridade {(currentCandidate.sim * 100).toFixed(1)}%<br />
+                      distância {currentCandidate.dist.toFixed(3)}
+                      {typeof currentCandidate.feedbackApplied === "number" && currentCandidate.feedbackApplied !== 0 && (
+                        <><br /><span className={currentCandidate.feedbackApplied > 0 ? "text-primary" : "text-destructive"}>
+                          ajuste do aprendizado: {currentCandidate.feedbackApplied > 0 ? "+" : ""}{(currentCandidate.feedbackApplied * 100).toFixed(1)}%
+                        </span></>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center">
+                    <div className="rounded-2xl overflow-hidden border border-primary/30 bg-black h-[200px] w-[200px]">
+                      <img src={currentCandidate.matchedUrl} alt={currentCandidate.person.nome} className="h-full w-full object-cover" />
+                    </div>
+                    <span className="mt-2 text-sm font-bold truncate max-w-[200px]">{currentCandidate.person.nome}</span>
+                    <span className="text-[9px] text-muted-foreground font-mono uppercase mt-0.5">
+                      {currentCandidate.person.status || "sem status"}
+                    </span>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                <div className="border-t border-primary/20 mt-6 pt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button
+                    onClick={onConfirmCandidate}
+                    disabled={savingFeedback}
+                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 disabled:opacity-50 transition"
+                  >
+                    <Check size={16} /> Sim, é essa pessoa
+                  </button>
+                  <button
+                    onClick={onRejectCandidate}
+                    disabled={savingFeedback}
+                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-destructive/15 border-2 border-destructive/40 text-destructive font-semibold text-sm hover:bg-destructive/25 disabled:opacity-50 transition"
+                  >
+                    <X size={16} /> Não, é outra pessoa
+                  </button>
+                  <button
+                    onClick={onSkipCandidate}
+                    disabled={savingFeedback || decisionIdx >= decisionQueue.length - 1}
+                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border text-muted-foreground font-semibold text-sm hover:bg-muted/40 disabled:opacity-40 transition"
+                  >
+                    <HelpCircle size={16} /> Não sei · pular
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+
+                <p className="mt-3 text-[10px] text-muted-foreground font-mono text-center">
+                  Suas respostas treinam o sistema — próximas buscas ficam mais precisas para este operador.
+                </p>
+              </motion.div>
+            )}
+
+            {/* Fila esgotada */}
+            {!confirmed && !currentCandidate && matches.length > 0 && (
+              <div className="text-center py-10 border border-dashed border-border rounded-xl text-muted-foreground text-sm flex flex-col items-center gap-2 bg-card/25">
+                <AlertCircle size={28} className="text-primary" />
+                <span>Todos os candidatos foram descartados.</span>
+                <span className="text-xs">O sistema registrou suas respostas e vai priorizar melhor da próxima vez.</span>
+              </div>
+            )}
+
+            {/* Preview compacto da fila */}
+            {!confirmed && decisionQueue.length > 1 && (
+              <div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2 mt-4">
+                  Próximos na fila ({Math.max(0, decisionQueue.length - decisionIdx - 1)})
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {decisionQueue.slice(decisionIdx + 1, decisionIdx + 9).map((m) => (
+                    <div
+                      key={m.person.id + m.matchedUrl}
+                      className="flex items-center gap-2 p-2 rounded-lg border border-border"
+                    >
+                      <img src={m.matchedUrl} alt="" className="h-9 w-9 rounded-md object-cover shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[11px] font-semibold truncate">{m.person.nome}</div>
+                        <div className="text-[9px] text-primary font-mono">{(m.confidence * 100).toFixed(0)}%</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )}
