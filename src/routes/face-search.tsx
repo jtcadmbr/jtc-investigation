@@ -149,6 +149,9 @@ function Page() {
       setScanPhase("none");
       setScanLogs([]);
       setActiveFaceMetrics(null);
+      setDecisionIdx(0);
+      setConfirmed(null);
+      setRejectedIds(new Set());
     };
     r.readAsDataURL(f);
   };
