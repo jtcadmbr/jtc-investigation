@@ -564,6 +564,56 @@ function Page() {
     [matches, threshold],
   );
 
+  // Candidatos vivos do carrossel: exclui rejeitados nesta sessão e
+  // ordena por confiança já reranqueada.
+  const decisionQueue = useMemo(() => {
+    if (!matches) return [];
+    return matches.filter((m) => !rejectedIds.has(m.person.id));
+  }, [matches, rejectedIds]);
+
+  const currentCandidate = decisionQueue[decisionIdx] || null;
+  const em = queryFace?.metrics?.extended;
+
+  async function saveFeedback(decision: "confirm" | "reject", m: Match) {
+    if (!user || !queryFace) return;
+    setSavingFeedback(true);
+    try {
+      const { error } = await supabase.from("face_feedback" as any).insert({
+        user_id: user.id,
+        investigated_id: m.person.id,
+        query_embedding: toArray(queryFace.descriptor),
+        decision,
+        distance: m.dist,
+        confidence: m.confidence,
+      });
+      if (error) throw error;
+      setLearnedCount((c) => c + 1);
+    } catch (e: any) {
+      toast.error("Não foi possível salvar sua resposta: " + (e.message || ""));
+    } finally {
+      setSavingFeedback(false);
+    }
+  }
+
+  async function onConfirmCandidate() {
+    if (!currentCandidate) return;
+    await saveFeedback("confirm", currentCandidate);
+    setConfirmed(currentCandidate);
+    toast.success("Registrado! O sistema vai lembrar deste acerto.");
+  }
+
+  async function onRejectCandidate() {
+    if (!currentCandidate) return;
+    await saveFeedback("reject", currentCandidate);
+    setRejectedIds((prev) => new Set(prev).add(currentCandidate.person.id));
+    setDecisionIdx(0); // sempre volta ao topo da fila filtrada
+    toast.info("Descartado. Buscando outra correspondência...");
+  }
+
+  function onSkipCandidate() {
+    setDecisionIdx((i) => i + 1);
+  }
+
   return (
     <AppShell title="Busca por Face">
       <div className="max-w-6xl mx-auto space-y-6">
