@@ -168,6 +168,22 @@ const IDX = {
   rightCheek: 454,
   midCheekL: 205,
   midCheekR: 425,
+  leftEyeTop: 159,
+  leftEyeBottom: 145,
+  rightEyeTop: 386,
+  rightEyeBottom: 374,
+  leftIris: 468,
+  rightIris: 473,
+  upperLipTop: 13,
+  lowerLipBottom: 14,
+  upperLipOuter: 0,
+  lowerLipOuter: 17,
+  leftBrowInner: 55,
+  leftBrowOuter: 70,
+  leftBrowTop: 105,
+  rightBrowInner: 285,
+  rightBrowOuter: 300,
+  rightBrowTop: 334,
 };
 
 type Pt = { x: number; y: number };
