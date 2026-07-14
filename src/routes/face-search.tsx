@@ -373,7 +373,39 @@ function Page() {
           best.set(m.person.id, m);
         }
       }
-      
+
+      // 4.5) Aprendizado por feedback — aplica bônus/penalidade a partir do histórico
+      // do próprio usuário. Confirmações antigas do mesmo tipo de rosto empurram
+      // a pessoa para cima; rejeições passadas empurram para baixo.
+      let learned = 0;
+      try {
+        const { data: fbData } = await supabase
+          .from("face_feedback" as any)
+          .select("id,investigated_id,decision,query_embedding");
+        const feedbacks: FeedbackRow[] = (fbData as any) || [];
+        learned = feedbacks.length;
+        if (feedbacks.length && queryFace) {
+          for (const [pid, m] of best) {
+            const relevant = feedbacks.filter((f) => f.investigated_id === pid);
+            if (!relevant.length) continue;
+            let bonus = 0;
+            for (const f of relevant) {
+              const d = distance(queryFace.descriptor, f.query_embedding);
+              if (d > 0.5) continue; // só rostos parecidos com o histórico
+              const weight = Math.max(0, (0.5 - d) / 0.5); // 1 quando idêntico, 0 quando longe
+              if (f.decision === "confirm") bonus += 0.10 * weight;
+              else bonus -= 0.14 * weight;
+            }
+            bonus = Math.max(-0.35, Math.min(0.2, bonus));
+            const newConf = Math.max(0, Math.min(1, m.confidence + bonus));
+            best.set(pid, { ...m, confidence: newConf, feedbackApplied: bonus });
+          }
+        }
+      } catch (e) {
+        // silencioso — se a tabela ainda não existir, segue sem reranking
+      }
+      setLearnedCount(learned);
+
       const sorted = Array.from(best.values()).sort(
         (a, b) => b.confidence - a.confidence || a.dist - b.dist,
       );
