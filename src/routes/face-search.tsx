@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, ScanFace, AlertCircle, Eye, X, Database, RefreshCw, Activity, ShieldAlert, Award } from "lucide-react";
+import { Upload, ScanFace, AlertCircle, Eye, X, Database, RefreshCw, Activity, ShieldAlert, Award, Check, ChevronRight, HelpCircle, Brain } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { FaceSelector } from "@/components/FaceSelector";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,14 @@ type Match = {
   confidence: number;
   gender?: string | null;
   age?: number | null;
+  feedbackApplied?: number; // signed delta applied by user feedback
+};
+
+type FeedbackRow = {
+  id: string;
+  investigated_id: string;
+  decision: "confirm" | "reject";
+  query_embedding: number[];
 };
 
 type FaceGroup = {
@@ -81,6 +89,13 @@ function Page() {
   const [scanPhase, setScanPhase] = useState<"none" | "landmarks" | "symmetry" | "skin" | "demographics" | "matching" | "done">("none");
   const [scanLogs, setScanLogs] = useState<string[]>([]);
   const [activeFaceMetrics, setActiveFaceMetrics] = useState<any>(null);
+
+  // Carrossel de decisão (fluxo 1-a-1 com feedback)
+  const [decisionIdx, setDecisionIdx] = useState(0);
+  const [confirmed, setConfirmed] = useState<Match | null>(null);
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
+  const [savingFeedback, setSavingFeedback] = useState(false);
+  const [learnedCount, setLearnedCount] = useState(0);
 
   const fileRef = useRef<HTMLInputElement>(null);
 
