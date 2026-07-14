@@ -167,6 +167,47 @@ export type Database = {
           },
         ]
       }
+      face_feedback: {
+        Row: {
+          confidence: number
+          created_at: string
+          decision: string
+          distance: number
+          id: string
+          investigated_id: string
+          query_embedding: number[]
+          user_id: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          decision: string
+          distance: number
+          id?: string
+          investigated_id: string
+          query_embedding: number[]
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          decision?: string
+          distance?: number
+          id?: string
+          investigated_id?: string
+          query_embedding?: number[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "face_feedback_investigated_id_fkey"
+            columns: ["investigated_id"]
+            isOneToOne: false
+            referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investigateds: {
         Row: {
           avo_materna: string | null
