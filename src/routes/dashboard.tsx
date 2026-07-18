@@ -141,29 +141,44 @@ function Page() {
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl border border-primary/30 bg-card cyber-grid scan-line p-6 lg:p-8"
+        className="relative overflow-hidden card-premium noise p-6 lg:p-8"
       >
+        <div className="absolute inset-0 aurora opacity-70" />
+        <div className="absolute inset-0 cyber-grid opacity-30" />
+        <div className="absolute inset-0 scan-line" />
         <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-center">
-          <div>
+          <div className="relative">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary">
               <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse glow" />
               Central de investigação · JTCQI+
             </div>
-            <h2 className="mt-2 text-2xl lg:text-3xl font-bold glow-text">
+            <h2 className="mt-2 text-3xl lg:text-4xl font-display font-bold gradient-text">
               {stats.invest} {stats.invest === 1 ? "pessoa cadastrada" : "pessoas cadastradas"}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground max-w-xl">
+            <p className="mt-2 text-sm text-muted-foreground max-w-xl">
               {stats.newWeek > 0
                 ? `${stats.newWeek} nova(s) nos últimos 7 dias. `
                 : "Sem novos cadastros nesta semana. "}
               {stats.faces} vetor(es) faciais prontos para busca instantânea.
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link to="/investigados" className="btn-interactive rounded-lg bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 flex items-center gap-1.5 glow">
+                <Plus size={13} /> Nova pessoa
+              </Link>
+              <Link to="/face-search" className="rounded-lg border border-primary/40 bg-primary/10 text-primary text-xs font-semibold px-4 py-2 flex items-center gap-1.5 hover:bg-primary/20 transition">
+                <ScanFace size={13} /> Buscar por face
+              </Link>
+            </div>
           </div>
-          <div className="w-full lg:w-[320px]">
+          <div className="relative w-full lg:w-[340px] rounded-xl border border-border/60 bg-background/40 backdrop-blur p-4">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-              Últimos 30 dias
+              Ingressos · últimos 30 dias
             </div>
             <Sparkline data={daily} />
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1">
+              <span>30d atrás</span>
+              <span className="text-primary font-semibold">hoje</span>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -176,14 +191,16 @@ function Page() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04 }}
-            className={`relative overflow-hidden rounded-xl border border-primary/20 bg-card p-4 bg-gradient-to-br ${c.tint} to-transparent`}
+            className={`relative overflow-hidden rounded-xl border border-border/70 bg-card/60 backdrop-blur p-4 bg-gradient-to-br ${c.tint} to-transparent hover-glow`}
           >
             <div className="flex items-center justify-between">
-              <c.icon className="h-5 w-5 text-primary opacity-90" />
+              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center">
+                <c.icon className="h-4 w-4 text-primary" />
+              </div>
               <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{c.hint}</span>
             </div>
-            <div className="mt-3 text-2xl font-bold glow-text truncate">{c.value}</div>
-            <div className="text-[11px] text-muted-foreground">{c.label}</div>
+            <div className="mt-3 text-2xl font-display font-bold truncate">{c.value}</div>
+            <div className="text-[11px] text-muted-foreground uppercase tracking-wider">{c.label}</div>
           </motion.div>
         ))}
       </div>
