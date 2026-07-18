@@ -469,8 +469,9 @@ function Page() {
                   const a = nodes.find((n) => n.id === e.from_id);
                   const b = nodes.find((n) => n.id === e.to_id);
                   if (!a || !b) return null;
-                  const x1 = a.pos_x + 60, y1 = a.pos_y + 60;
-                  const x2 = b.pos_x + 60, y2 = b.pos_y + 60;
+                  const half = SIZE_PX / 2;
+                  const x1 = a.pos_x + half, y1 = a.pos_y + half;
+                  const x2 = b.pos_x + half, y2 = b.pos_y + half;
                   const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
                   const color = e.cor || DEFAULT_EDGE;
                   return (
