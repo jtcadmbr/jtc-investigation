@@ -71,6 +71,37 @@ function Page() {
   };
   useEffect(() => localStorage.setItem("panel:snap", snap ? "1" : "0"), [snap]);
   useEffect(() => localStorage.setItem("panel:nodeSize", nodeSize), [nodeSize]);
+  const [showMinimap, setShowMinimap] = useState<boolean>(
+    () => localStorage.getItem("panel:minimap") !== "0",
+  );
+  useEffect(() => localStorage.setItem("panel:minimap", showMinimap ? "1" : "0"), [showMinimap]);
+  const [transformState, setTransformState] = useState({ x: 0, y: 0, scale: 1 });
+
+  // Keyboard shortcuts: Esc cancels linking, Ctrl/Cmd+Z undoes, F fits view.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key === "Escape") {
+        if (editingEdge) setEditingEdge(null);
+        else if (viewingEdge) setViewingEdge(null);
+        else if (showAdd) setShowAdd(false);
+        else if (linking) setLinking(null);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        undo();
+      } else if (e.key.toLowerCase() === "f") {
+        fitView();
+      } else if (e.key === "+" || e.key === "=") {
+        transformRef.current?.zoomIn(0.2);
+      } else if (e.key === "-" || e.key === "_") {
+        transformRef.current?.zoomOut(0.2);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linking, editingEdge, viewingEdge, showAdd]);
 
   const SIZE_PX = nodeSize === "S" ? 90 : nodeSize === "L" ? 150 : 120;
   const AVATAR_PX = nodeSize === "S" ? 44 : nodeSize === "L" ? 78 : 64;
