@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { motion } from "framer-motion";
-import { Plus, Search, X, Link2, ArrowLeft, Download, Undo2, Grid3x3, Maximize2, ZoomIn, ZoomOut, Layout, Sparkles, Focus } from "lucide-react";
+import { Plus, Search, X, Link2, ArrowLeft, Download, Undo2, Grid3x3, Maximize2, ZoomIn, ZoomOut, Layout, Sparkles, Focus, Map } from "lucide-react";
 import { toPng } from "html-to-image";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -460,6 +460,13 @@ function Page() {
           </button>
           <button onClick={exportPng} title="Exportar PNG" className="flex items-center gap-1 px-2 py-1.5 rounded-md text-xs border border-border hover:border-primary">
             <Download size={12} /> PNG
+          </button>
+          <button
+            onClick={() => setShowMinimap((v) => !v)}
+            title="Alternar minimapa"
+            className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-xs border ${showMinimap ? "border-primary text-primary bg-primary/10" : "border-border text-muted-foreground"}`}
+          >
+            <Map size={12} /> Minimapa
           </button>
         </div>
 
