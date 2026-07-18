@@ -486,7 +486,10 @@ function Page() {
           initialScale={initialScale}
           key={initialScale}
           limitToBounds={false}
-          onTransform={(ref: any) => setScale(ref.state.scale)}
+          onTransform={(ref: any) => {
+            setScale(ref.state.scale);
+            setTransformState({ x: ref.state.positionX, y: ref.state.positionY, scale: ref.state.scale });
+          }}
           doubleClick={{ disabled: true }}
           panning={{ excluded: ["panel-node"] }}
         >
