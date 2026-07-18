@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Fingerprint, Shield } from "lucide-react";
+import { Eye, EyeOff, Fingerprint, Shield, Lock, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 
@@ -36,23 +36,31 @@ function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 cyber-grid scan-line">
+    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
+      <div className="absolute inset-0 aurora" />
+      <div className="absolute inset-0 cyber-grid opacity-40" />
+      <div className="absolute inset-0 scan-line" />
+
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative w-full max-w-md rounded-2xl border border-primary/30 bg-card/80 backdrop-blur-xl p-8 glow"
+        className="relative w-full max-w-md card-premium p-8"
       >
-        <div className="flex flex-col items-center text-center mb-8">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-primary/40 bg-background/80 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-primary flex items-center gap-1.5">
+          <Sparkles size={10} /> acesso restrito
+        </div>
+        <div className="flex flex-col items-center text-center mb-8 mt-2">
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="h-16 w-16 rounded-2xl bg-primary/10 border border-primary/40 flex items-center justify-center mb-4 pulse-glow"
+            className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/30 via-primary/10 to-accent/20 border border-primary/40 flex items-center justify-center mb-5 pulse-glow"
           >
-            <Shield className="h-8 w-8 text-primary" />
+            <Shield className="h-9 w-9 text-primary" />
+            <div className="absolute -inset-2 rounded-3xl border border-primary/20 animate-pulse" />
           </motion.div>
-          <h1 className="text-3xl font-bold tracking-tight glow-text">JTCQI+</h1>
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mt-1">
+          <h1 className="text-4xl font-display font-bold tracking-tight gradient-text">JTCQI+</h1>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground mt-2">
             Banco de Dados Criptografado de Pessoas
           </p>
         </div>
@@ -106,16 +114,17 @@ function LoginPage() {
             whileTap={{ scale: 0.98 }}
             disabled={busy}
             type="submit"
-            className="w-full rounded-lg bg-primary text-primary-foreground font-semibold py-3 flex items-center justify-center gap-2 glow hover:brightness-110 disabled:opacity-60 transition"
+            className="btn-interactive w-full rounded-lg bg-gradient-to-r from-primary via-primary to-accent text-primary-foreground font-semibold py-3 flex items-center justify-center gap-2 glow hover:brightness-110 disabled:opacity-60 transition"
           >
             <Fingerprint size={18} />
             {busy ? "Autenticando..." : "Entrar"}
           </motion.button>
         </form>
 
-        <p className="text-[10px] text-center mt-6 text-muted-foreground/70 tracking-wider">
-          SISTEMA RESTRITO • USO FICTÍCIO E ORGANIZACIONAL
-        </p>
+        <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-muted-foreground/70 tracking-[0.25em]">
+          <Lock size={10} />
+          <span>SISTEMA RESTRITO • USO ORGANIZACIONAL</span>
+        </div>
       </motion.div>
     </div>
   );
