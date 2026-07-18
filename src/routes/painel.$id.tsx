@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { motion } from "framer-motion";
-import { Plus, Search, X, Link2, ArrowLeft, Download, Undo2, Grid3x3, Maximize2, ZoomIn, ZoomOut, Layout, Sparkles, Focus } from "lucide-react";
+import { Plus, Search, X, Link2, ArrowLeft, Download, Undo2, Grid3x3, Maximize2, ZoomIn, ZoomOut, Layout, Sparkles, Focus, Map } from "lucide-react";
 import { toPng } from "html-to-image";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,6 +71,37 @@ function Page() {
   };
   useEffect(() => localStorage.setItem("panel:snap", snap ? "1" : "0"), [snap]);
   useEffect(() => localStorage.setItem("panel:nodeSize", nodeSize), [nodeSize]);
+  const [showMinimap, setShowMinimap] = useState<boolean>(
+    () => localStorage.getItem("panel:minimap") !== "0",
+  );
+  useEffect(() => localStorage.setItem("panel:minimap", showMinimap ? "1" : "0"), [showMinimap]);
+  const [transformState, setTransformState] = useState({ x: 0, y: 0, scale: 1 });
+
+  // Keyboard shortcuts: Esc cancels linking, Ctrl/Cmd+Z undoes, F fits view.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key === "Escape") {
+        if (editingEdge) setEditingEdge(null);
+        else if (viewingEdge) setViewingEdge(null);
+        else if (showAdd) setShowAdd(false);
+        else if (linking) setLinking(null);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        undo();
+      } else if (e.key.toLowerCase() === "f") {
+        fitView();
+      } else if (e.key === "+" || e.key === "=") {
+        transformRef.current?.zoomIn(0.2);
+      } else if (e.key === "-" || e.key === "_") {
+        transformRef.current?.zoomOut(0.2);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linking, editingEdge, viewingEdge, showAdd]);
 
   const SIZE_PX = nodeSize === "S" ? 90 : nodeSize === "L" ? 150 : 120;
   const AVATAR_PX = nodeSize === "S" ? 44 : nodeSize === "L" ? 78 : 64;
@@ -430,6 +461,13 @@ function Page() {
           <button onClick={exportPng} title="Exportar PNG" className="flex items-center gap-1 px-2 py-1.5 rounded-md text-xs border border-border hover:border-primary">
             <Download size={12} /> PNG
           </button>
+          <button
+            onClick={() => setShowMinimap((v) => !v)}
+            title="Alternar minimapa"
+            className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-xs border ${showMinimap ? "border-primary text-primary bg-primary/10" : "border-border text-muted-foreground"}`}
+          >
+            <Map size={12} /> Minimapa
+          </button>
         </div>
 
         <div className="relative ml-auto">
@@ -455,7 +493,10 @@ function Page() {
           initialScale={initialScale}
           key={initialScale}
           limitToBounds={false}
-          onTransform={(ref: any) => setScale(ref.state.scale)}
+          onTransform={(ref: any) => {
+            setScale(ref.state.scale);
+            setTransformState({ x: ref.state.positionX, y: ref.state.positionY, scale: ref.state.scale });
+          }}
           doubleClick={{ disabled: true }}
           panning={{ excluded: ["panel-node"] }}
         >
@@ -579,11 +620,83 @@ function Page() {
             </div>
           </TransformComponent>
         </TransformWrapper>
+        {showMinimap && nodes.length > 0 && (
+          <div
+            data-export-ignore="1"
+            className="absolute bottom-3 right-3 w-48 h-32 rounded-lg border border-primary/40 bg-background/85 backdrop-blur shadow-xl overflow-hidden"
+            title="Minimapa — clique para centralizar"
+            onClick={(e) => {
+              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              const relX = (e.clientX - rect.left) / rect.width;
+              const relY = (e.clientY - rect.top) / rect.height;
+              const targetX = relX * 3000;
+              const targetY = relY * 3000;
+              const cw = containerRef.current?.clientWidth ?? 0;
+              const ch = containerRef.current?.clientHeight ?? 0;
+              const s = transformState.scale || 1;
+              try {
+                transformRef.current?.setTransform(cw / 2 - targetX * s, ch / 2 - targetY * s, s, 300, "easeOut");
+              } catch {}
+            }}
+          >
+            <svg viewBox="0 0 3000 3000" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+              <rect x={0} y={0} width={3000} height={3000} fill="#0a0a0a" />
+              {edges.map((e) => {
+                const a = nodes.find((n) => n.id === e.from_id);
+                const b = nodes.find((n) => n.id === e.to_id);
+                if (!a || !b) return null;
+                return (
+                  <line
+                    key={e.id}
+                    x1={a.pos_x + SIZE_PX / 2}
+                    y1={a.pos_y + SIZE_PX / 2}
+                    x2={b.pos_x + SIZE_PX / 2}
+                    y2={b.pos_y + SIZE_PX / 2}
+                    stroke={e.cor || DEFAULT_EDGE}
+                    strokeWidth={8}
+                    opacity={0.6}
+                  />
+                );
+              })}
+              {nodes.map((n) => (
+                <circle
+                  key={n.id}
+                  cx={n.pos_x + SIZE_PX / 2}
+                  cy={n.pos_y + SIZE_PX / 2}
+                  r={28}
+                  fill={STATUS_COLOR[n.status] || "#94a3b8"}
+                  opacity={highlight && !highlightMatch(n) ? 0.25 : 1}
+                />
+              ))}
+              {(() => {
+                const cw = containerRef.current?.clientWidth ?? 0;
+                const ch = containerRef.current?.clientHeight ?? 0;
+                const s = transformState.scale || 1;
+                const vx = -transformState.x / s;
+                const vy = -transformState.y / s;
+                const vw = cw / s;
+                const vh = ch / s;
+                return (
+                  <rect
+                    x={vx}
+                    y={vy}
+                    width={vw}
+                    height={vh}
+                    fill="none"
+                    stroke="#22c55e"
+                    strokeWidth={12}
+                    opacity={0.9}
+                  />
+                );
+              })()}
+            </svg>
+          </div>
+        )}
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
         Arraste para mover. Clique em um nó e depois em outro para conectar. <b>Um clique</b> numa
         linha mostra o texto completo, <b>dois cliques</b> abrem a edição. Clique com o botão direito
-        num nó para tirá-lo do painel.
+        num nó para tirá-lo do painel. Atalhos: <b>F</b> enquadrar, <b>Ctrl+Z</b> desfazer, <b>Esc</b> cancelar, <b>+/-</b> zoom.
       </p>
 
       {viewingEdge && (
