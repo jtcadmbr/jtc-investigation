@@ -2,12 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { motion } from "framer-motion";
-import { Plus, Search, X, Link2, ArrowLeft } from "lucide-react";
+import { Plus, Search, X, Link2, ArrowLeft, Download, Undo2, Grid3x3, Maximize2, ZoomIn, ZoomOut, Layout, Sparkles, Focus } from "lucide-react";
+import { toPng } from "html-to-image";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
+import { computeLayout, LAYOUT_LABELS, snapToGrid, type LayoutName } from "@/lib/panel-layouts";
 
 export const Route = createFileRoute("/painel/$id")({ component: Page });
 
@@ -54,6 +56,24 @@ function Page() {
   const [editingEdge, setEditingEdge] = useState<any | null>(null);
   const [viewingEdge, setViewingEdge] = useState<any | null>(null);
   const edgeClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transformRef = useRef<any>(null);
+  const [snap, setSnap] = useState<boolean>(() => localStorage.getItem("panel:snap") === "1");
+  const [nodeSize, setNodeSize] = useState<"S" | "M" | "L">(
+    () => (localStorage.getItem("panel:nodeSize") as any) || "M",
+  );
+  const [showLayouts, setShowLayouts] = useState(false);
+  const [highlight, setHighlight] = useState("");
+  const [applying, setApplying] = useState(false);
+  const historyRef = useRef<Node[][]>([]);
+  const pushHistory = (snap: Node[]) => {
+    historyRef.current.push(snap.map((n) => ({ ...n })));
+    if (historyRef.current.length > 30) historyRef.current.shift();
+  };
+  useEffect(() => localStorage.setItem("panel:snap", snap ? "1" : "0"), [snap]);
+  useEffect(() => localStorage.setItem("panel:nodeSize", nodeSize), [nodeSize]);
+
+  const SIZE_PX = nodeSize === "S" ? 90 : nodeSize === "L" ? 150 : 120;
+  const AVATAR_PX = nodeSize === "S" ? 44 : nodeSize === "L" ? 78 : 64;
 
   useEffect(() => {
     const calc = () => {
@@ -145,12 +165,103 @@ function Page() {
     draggingRef.current = null;
     if (!d) return;
     const n = nodes.find((x) => x.id === d.id);
-    if (n)
-      await supabase
-        .from("panel_nodes")
-        .update({ pos_x: n.pos_x, pos_y: n.pos_y })
-        .eq("id", n.node_id);
+    if (n) {
+      let { pos_x, pos_y } = n;
+      if (snap) {
+        const s = snapToGrid(pos_x, pos_y, 20);
+        pos_x = s.x; pos_y = s.y;
+        setNodes((prev) => prev.map((x) => (x.id === n.id ? { ...x, pos_x, pos_y } : x)));
+      }
+      pushHistory(nodes);
+      await supabase.from("panel_nodes").update({ pos_x, pos_y }).eq("id", n.node_id);
+    }
   };
+
+  async function applyLayout(name: LayoutName) {
+    if (!nodes.length) return;
+    setApplying(true);
+    pushHistory(nodes);
+    try {
+      const positions = computeLayout(
+        name,
+        nodes.map((n) => ({ id: n.id, status: n.status, nome: n.nome, pos_x: n.pos_x, pos_y: n.pos_y })),
+        edges.map((e) => ({ from_id: e.from_id, to_id: e.to_id })),
+      );
+      const updated = nodes.map((n) => {
+        const p = positions[n.id];
+        return p ? { ...n, pos_x: p.x, pos_y: p.y } : n;
+      });
+      setNodes(updated);
+      await Promise.all(
+        updated.map((n) =>
+          supabase.from("panel_nodes").update({ pos_x: n.pos_x, pos_y: n.pos_y }).eq("id", n.node_id),
+        ),
+      );
+      toast.success(`Layout aplicado: ${LAYOUT_LABELS[name]}`);
+      setShowLayouts(false);
+      setTimeout(fitView, 150);
+    } catch (e: any) {
+      toast.error("Falha ao aplicar layout: " + (e.message || ""));
+    } finally {
+      setApplying(false);
+    }
+  }
+
+  async function undo() {
+    const prev = historyRef.current.pop();
+    if (!prev) return toast.info("Nada para desfazer");
+    setNodes(prev);
+    await Promise.all(
+      prev.map((n) =>
+        supabase.from("panel_nodes").update({ pos_x: n.pos_x, pos_y: n.pos_y }).eq("id", n.node_id),
+      ),
+    );
+  }
+
+  function fitView() {
+    if (!transformRef.current || !nodes.length) return;
+    const minX = Math.min(...nodes.map((n) => n.pos_x));
+    const maxX = Math.max(...nodes.map((n) => n.pos_x + SIZE_PX));
+    const minY = Math.min(...nodes.map((n) => n.pos_y));
+    const maxY = Math.max(...nodes.map((n) => n.pos_y + SIZE_PX));
+    const w = maxX - minX;
+    const h = maxY - minY;
+    const cw = containerRef.current?.clientWidth ?? window.innerWidth;
+    const ch = containerRef.current?.clientHeight ?? 700;
+    const scaleX = (cw - 60) / w;
+    const scaleY = (ch - 60) / h;
+    const s = Math.max(0.2, Math.min(1.5, Math.min(scaleX, scaleY)));
+    const cx = minX + w / 2;
+    const cy = minY + h / 2;
+    const tx = cw / 2 - cx * s;
+    const ty = ch / 2 - cy * s;
+    try {
+      transformRef.current.setTransform(tx, ty, s, 400, "easeOut");
+    } catch {}
+  }
+
+  async function exportPng() {
+    if (!boardRef.current) return;
+    try {
+      toast.info("Gerando imagem...");
+      const dataUrl = await toPng(boardRef.current, {
+        backgroundColor: "#0a0a0a",
+        cacheBust: true,
+        pixelRatio: 1.5,
+        filter: (el) => !(el instanceof HTMLElement && el.dataset.exportIgnore === "1"),
+      });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${board?.titulo || "painel"}.png`;
+      a.click();
+      toast.success("Painel exportado!");
+    } catch (e: any) {
+      toast.error("Falha ao exportar: " + (e.message || ""));
+    }
+  }
+
+  const highlightMatch = (n: Node) =>
+    highlight.trim() && n.nome.toLowerCase().includes(highlight.trim().toLowerCase());
 
   const addToPanel = async (investigatedId: string) => {
     const pos_x = 200 + Math.random() * 200;
@@ -230,7 +341,7 @@ function Page() {
 
   return (
     <AppShell title={board?.titulo || "Painel"}>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         <Link
           to="/painel"
           className="flex items-center gap-1 px-3 py-2 rounded-lg border border-border text-sm hover:border-primary"
@@ -251,8 +362,94 @@ function Page() {
         </div>
       </div>
 
+      {/* === EDITOR TOOLBAR === */}
+      <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-xl border border-primary/20 bg-card/50 backdrop-blur">
+        <div className="relative">
+          <button
+            onClick={() => setShowLayouts((v) => !v)}
+            disabled={applying || nodes.length === 0}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/30 text-sm hover:border-primary disabled:opacity-40"
+          >
+            <Layout size={14} /> Layouts <Sparkles size={12} className="text-primary" />
+          </button>
+          {showLayouts && (
+            <div className="absolute z-30 mt-1 w-56 rounded-xl border border-primary/30 bg-card shadow-xl glow overflow-hidden">
+              {(Object.keys(LAYOUT_LABELS) as LayoutName[]).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => applyLayout(k)}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 border-b border-border last:border-0"
+                >
+                  {LAYOUT_LABELS[k]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 border-l border-border pl-2 ml-1">
+          <button onClick={() => transformRef.current?.zoomIn(0.2)} title="Zoom +" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <ZoomIn size={14} />
+          </button>
+          <button onClick={() => transformRef.current?.zoomOut(0.2)} title="Zoom -" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <ZoomOut size={14} />
+          </button>
+          <button onClick={fitView} title="Enquadrar tudo" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <Maximize2 size={14} />
+          </button>
+          <button onClick={() => transformRef.current?.resetTransform(300, "easeOut")} title="Resetar zoom" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <Focus size={14} />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1 border-l border-border pl-2 ml-1">
+          <button
+            onClick={() => setSnap((s) => !s)}
+            title="Encaixar na grade"
+            className={`flex items-center gap-1 px-2 py-1.5 rounded-md border text-xs ${snap ? "border-primary text-primary bg-primary/10" : "border-border text-muted-foreground"}`}
+          >
+            <Grid3x3 size={12} /> Grade
+          </button>
+          <div className="flex items-center gap-0.5 rounded-md border border-border overflow-hidden">
+            {(["S", "M", "L"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setNodeSize(s)}
+                className={`px-2 py-1 text-[11px] font-semibold ${nodeSize === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-primary/10"}`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 border-l border-border pl-2 ml-1">
+          <button onClick={undo} title="Desfazer" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <Undo2 size={14} />
+          </button>
+          <button onClick={exportPng} title="Exportar PNG" className="flex items-center gap-1 px-2 py-1.5 rounded-md text-xs border border-border hover:border-primary">
+            <Download size={12} /> PNG
+          </button>
+        </div>
+
+        <div className="relative ml-auto">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" size={12} />
+          <input
+            value={highlight}
+            onChange={(e) => setHighlight(e.target.value)}
+            placeholder="Destacar no painel..."
+            className="pl-7 pr-3 py-1.5 bg-input border border-border rounded-md text-xs outline-none focus:border-primary w-48"
+          />
+        </div>
+
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          {nodes.length} nós · {edges.length} conexões
+        </div>
+      </div>
+
       <div ref={containerRef} className="relative h-[70vh] rounded-2xl border border-primary/30 bg-card overflow-hidden cyber-grid">
         <TransformWrapper
+          ref={transformRef}
           minScale={0.2}
           maxScale={2.5}
           initialScale={initialScale}
@@ -272,8 +469,9 @@ function Page() {
                   const a = nodes.find((n) => n.id === e.from_id);
                   const b = nodes.find((n) => n.id === e.to_id);
                   if (!a || !b) return null;
-                  const x1 = a.pos_x + 60, y1 = a.pos_y + 60;
-                  const x2 = b.pos_x + 60, y2 = b.pos_y + 60;
+                  const half = SIZE_PX / 2;
+                  const x1 = a.pos_x + half, y1 = a.pos_y + half;
+                  const x2 = b.pos_x + half, y2 = b.pos_y + half;
                   const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
                   const color = e.cor || DEFAULT_EDGE;
                   return (
@@ -349,20 +547,21 @@ function Page() {
                 >
                   <motion.div
                     whileHover={{ scale: 1.05 }}
-                    className={`w-[120px] rounded-xl border-2 bg-card p-2 text-center shadow-xl ${linking === n.id ? "border-primary glow pulse-glow" : ""}`}
-                    style={{ borderColor: linking === n.id ? undefined : STATUS_COLOR[n.status] }}
+                    className={`rounded-xl border-2 bg-card p-2 text-center shadow-xl transition-all ${linking === n.id ? "border-primary glow pulse-glow" : ""} ${highlight && !highlightMatch(n) ? "opacity-25" : ""} ${highlightMatch(n) ? "ring-2 ring-primary glow" : ""}`}
+                    style={{ width: SIZE_PX, borderColor: linking === n.id ? undefined : STATUS_COLOR[n.status] }}
                   >
                     {n.foto_url ? (
                       <img
                         src={n.foto_url}
                         alt={n.nome}
-                        className="h-16 w-16 mx-auto rounded-full object-cover border-2"
-                        style={{ borderColor: STATUS_COLOR[n.status] }}
+                        className="mx-auto rounded-full object-cover border-2"
+                        style={{ width: AVATAR_PX, height: AVATAR_PX, borderColor: STATUS_COLOR[n.status] }}
+                        crossOrigin="anonymous"
                       />
                     ) : (
                       <div
-                        className="h-16 w-16 mx-auto rounded-full bg-muted border-2 flex items-center justify-center font-bold"
-                        style={{ borderColor: STATUS_COLOR[n.status], color: STATUS_COLOR[n.status] }}
+                        className="mx-auto rounded-full bg-muted border-2 flex items-center justify-center font-bold"
+                        style={{ width: AVATAR_PX, height: AVATAR_PX, borderColor: STATUS_COLOR[n.status], color: STATUS_COLOR[n.status] }}
                       >
                         {n.nome[0]}
                       </div>

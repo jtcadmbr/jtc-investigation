@@ -410,6 +410,34 @@ function Page() {
         (a, b) => b.confidence - a.confidence || a.dist - b.dist,
       );
 
+      // === RATIO-TEST (Regra de Lowe adaptada) ===
+      // Compara o vencedor com o segundo colocado. Margem grande = alta certeza,
+      // margem mínima = ambiguidade (rostos parecidos concorrendo). Isso é o
+      // que separa uma decisão biométrica confiável de um chute educado.
+      if (sorted.length >= 2) {
+        const d1 = sorted[0].dist;
+        const d2 = sorted[1].dist;
+        const margin = (d2 - d1) / Math.max(d1, 0.01);
+        let marginBonus = 0;
+        if (margin > 0.30) marginBonus = 0.10;
+        else if (margin > 0.18) marginBonus = 0.05;
+        else if (margin < 0.04) marginBonus = -0.18;
+        else if (margin < 0.10) marginBonus = -0.08;
+        if (marginBonus !== 0) {
+          const m = sorted[0];
+          const newConf = Math.max(0, Math.min(1, m.confidence + marginBonus));
+          sorted[0] = { ...m, confidence: newConf, feedbackApplied: (m.feedbackApplied || 0) + marginBonus };
+        }
+        // Penaliza runner-ups muito próximos entre si (ruído)
+        for (let i = 1; i < Math.min(sorted.length, 5); i++) {
+          const gap = (sorted[i].dist - d1) / Math.max(d1, 0.01);
+          if (gap < 0.05) {
+            sorted[i] = { ...sorted[i], confidence: Math.max(0, sorted[i].confidence - 0.08) };
+          }
+        }
+        sorted.sort((a, b) => b.confidence - a.confidence || a.dist - b.dist);
+      }
+
       // --- Sequência Cinematográfica de Animação ---
       const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -495,7 +523,20 @@ function Page() {
         best.set(m.person.id, m);
       }
     }
-    return Array.from(best.values()).sort((a, b) => b.confidence - a.confidence || a.dist - b.dist);
+    const arr = Array.from(best.values()).sort((a, b) => b.confidence - a.confidence || a.dist - b.dist);
+    // Ratio-test também no fluxo multi-face
+    if (arr.length >= 2) {
+      const d1 = arr[0].dist, d2 = arr[1].dist;
+      const margin = (d2 - d1) / Math.max(d1, 0.01);
+      let b = 0;
+      if (margin > 0.30) b = 0.10;
+      else if (margin > 0.18) b = 0.05;
+      else if (margin < 0.04) b = -0.18;
+      else if (margin < 0.10) b = -0.08;
+      if (b !== 0) arr[0] = { ...arr[0], confidence: Math.max(0, Math.min(1, arr[0].confidence + b)) };
+      arr.sort((a, b) => b.confidence - a.confidence || a.dist - b.dist);
+    }
+    return arr;
   }
 
   async function scanAll() {
