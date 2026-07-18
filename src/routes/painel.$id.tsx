@@ -2,12 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { motion } from "framer-motion";
-import { Plus, Search, X, Link2, ArrowLeft } from "lucide-react";
+import { Plus, Search, X, Link2, ArrowLeft, Download, Undo2, Grid3x3, Maximize2, ZoomIn, ZoomOut, Layout, Sparkles, Focus } from "lucide-react";
+import { toPng } from "html-to-image";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
+import { computeLayout, LAYOUT_LABELS, snapToGrid, type LayoutName } from "@/lib/panel-layouts";
 
 export const Route = createFileRoute("/painel/$id")({ component: Page });
 
@@ -54,6 +56,24 @@ function Page() {
   const [editingEdge, setEditingEdge] = useState<any | null>(null);
   const [viewingEdge, setViewingEdge] = useState<any | null>(null);
   const edgeClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transformRef = useRef<any>(null);
+  const [snap, setSnap] = useState<boolean>(() => localStorage.getItem("panel:snap") === "1");
+  const [nodeSize, setNodeSize] = useState<"S" | "M" | "L">(
+    () => (localStorage.getItem("panel:nodeSize") as any) || "M",
+  );
+  const [showLayouts, setShowLayouts] = useState(false);
+  const [highlight, setHighlight] = useState("");
+  const [applying, setApplying] = useState(false);
+  const historyRef = useRef<Node[][]>([]);
+  const pushHistory = (snap: Node[]) => {
+    historyRef.current.push(snap.map((n) => ({ ...n })));
+    if (historyRef.current.length > 30) historyRef.current.shift();
+  };
+  useEffect(() => localStorage.setItem("panel:snap", snap ? "1" : "0"), [snap]);
+  useEffect(() => localStorage.setItem("panel:nodeSize", nodeSize), [nodeSize]);
+
+  const SIZE_PX = nodeSize === "S" ? 90 : nodeSize === "L" ? 150 : 120;
+  const AVATAR_PX = nodeSize === "S" ? 44 : nodeSize === "L" ? 78 : 64;
 
   useEffect(() => {
     const calc = () => {
@@ -145,12 +165,103 @@ function Page() {
     draggingRef.current = null;
     if (!d) return;
     const n = nodes.find((x) => x.id === d.id);
-    if (n)
-      await supabase
-        .from("panel_nodes")
-        .update({ pos_x: n.pos_x, pos_y: n.pos_y })
-        .eq("id", n.node_id);
+    if (n) {
+      let { pos_x, pos_y } = n;
+      if (snap) {
+        const s = snapToGrid(pos_x, pos_y, 20);
+        pos_x = s.x; pos_y = s.y;
+        setNodes((prev) => prev.map((x) => (x.id === n.id ? { ...x, pos_x, pos_y } : x)));
+      }
+      pushHistory(nodes);
+      await supabase.from("panel_nodes").update({ pos_x, pos_y }).eq("id", n.node_id);
+    }
   };
+
+  async function applyLayout(name: LayoutName) {
+    if (!nodes.length) return;
+    setApplying(true);
+    pushHistory(nodes);
+    try {
+      const positions = computeLayout(
+        name,
+        nodes.map((n) => ({ id: n.id, status: n.status, nome: n.nome, pos_x: n.pos_x, pos_y: n.pos_y })),
+        edges.map((e) => ({ from_id: e.from_id, to_id: e.to_id })),
+      );
+      const updated = nodes.map((n) => {
+        const p = positions[n.id];
+        return p ? { ...n, pos_x: p.x, pos_y: p.y } : n;
+      });
+      setNodes(updated);
+      await Promise.all(
+        updated.map((n) =>
+          supabase.from("panel_nodes").update({ pos_x: n.pos_x, pos_y: n.pos_y }).eq("id", n.node_id),
+        ),
+      );
+      toast.success(`Layout aplicado: ${LAYOUT_LABELS[name]}`);
+      setShowLayouts(false);
+      setTimeout(fitView, 150);
+    } catch (e: any) {
+      toast.error("Falha ao aplicar layout: " + (e.message || ""));
+    } finally {
+      setApplying(false);
+    }
+  }
+
+  async function undo() {
+    const prev = historyRef.current.pop();
+    if (!prev) return toast.info("Nada para desfazer");
+    setNodes(prev);
+    await Promise.all(
+      prev.map((n) =>
+        supabase.from("panel_nodes").update({ pos_x: n.pos_x, pos_y: n.pos_y }).eq("id", n.node_id),
+      ),
+    );
+  }
+
+  function fitView() {
+    if (!transformRef.current || !nodes.length) return;
+    const minX = Math.min(...nodes.map((n) => n.pos_x));
+    const maxX = Math.max(...nodes.map((n) => n.pos_x + SIZE_PX));
+    const minY = Math.min(...nodes.map((n) => n.pos_y));
+    const maxY = Math.max(...nodes.map((n) => n.pos_y + SIZE_PX));
+    const w = maxX - minX;
+    const h = maxY - minY;
+    const cw = containerRef.current?.clientWidth ?? window.innerWidth;
+    const ch = containerRef.current?.clientHeight ?? 700;
+    const scaleX = (cw - 60) / w;
+    const scaleY = (ch - 60) / h;
+    const s = Math.max(0.2, Math.min(1.5, Math.min(scaleX, scaleY)));
+    const cx = minX + w / 2;
+    const cy = minY + h / 2;
+    const tx = cw / 2 - cx * s;
+    const ty = ch / 2 - cy * s;
+    try {
+      transformRef.current.setTransform(tx, ty, s, 400, "easeOut");
+    } catch {}
+  }
+
+  async function exportPng() {
+    if (!boardRef.current) return;
+    try {
+      toast.info("Gerando imagem...");
+      const dataUrl = await toPng(boardRef.current, {
+        backgroundColor: "#0a0a0a",
+        cacheBust: true,
+        pixelRatio: 1.5,
+        filter: (el) => !(el instanceof HTMLElement && el.dataset.exportIgnore === "1"),
+      });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${board?.titulo || "painel"}.png`;
+      a.click();
+      toast.success("Painel exportado!");
+    } catch (e: any) {
+      toast.error("Falha ao exportar: " + (e.message || ""));
+    }
+  }
+
+  const highlightMatch = (n: Node) =>
+    highlight.trim() && n.nome.toLowerCase().includes(highlight.trim().toLowerCase());
 
   const addToPanel = async (investigatedId: string) => {
     const pos_x = 200 + Math.random() * 200;
