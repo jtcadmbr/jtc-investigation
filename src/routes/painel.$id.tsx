@@ -341,7 +341,7 @@ function Page() {
 
   return (
     <AppShell title={board?.titulo || "Painel"}>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         <Link
           to="/painel"
           className="flex items-center gap-1 px-3 py-2 rounded-lg border border-border text-sm hover:border-primary"
@@ -362,8 +362,94 @@ function Page() {
         </div>
       </div>
 
+      {/* === EDITOR TOOLBAR === */}
+      <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-xl border border-primary/20 bg-card/50 backdrop-blur">
+        <div className="relative">
+          <button
+            onClick={() => setShowLayouts((v) => !v)}
+            disabled={applying || nodes.length === 0}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/30 text-sm hover:border-primary disabled:opacity-40"
+          >
+            <Layout size={14} /> Layouts <Sparkles size={12} className="text-primary" />
+          </button>
+          {showLayouts && (
+            <div className="absolute z-30 mt-1 w-56 rounded-xl border border-primary/30 bg-card shadow-xl glow overflow-hidden">
+              {(Object.keys(LAYOUT_LABELS) as LayoutName[]).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => applyLayout(k)}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 border-b border-border last:border-0"
+                >
+                  {LAYOUT_LABELS[k]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 border-l border-border pl-2 ml-1">
+          <button onClick={() => transformRef.current?.zoomIn(0.2)} title="Zoom +" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <ZoomIn size={14} />
+          </button>
+          <button onClick={() => transformRef.current?.zoomOut(0.2)} title="Zoom -" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <ZoomOut size={14} />
+          </button>
+          <button onClick={fitView} title="Enquadrar tudo" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <Maximize2 size={14} />
+          </button>
+          <button onClick={() => transformRef.current?.resetTransform(300, "easeOut")} title="Resetar zoom" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <Focus size={14} />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1 border-l border-border pl-2 ml-1">
+          <button
+            onClick={() => setSnap((s) => !s)}
+            title="Encaixar na grade"
+            className={`flex items-center gap-1 px-2 py-1.5 rounded-md border text-xs ${snap ? "border-primary text-primary bg-primary/10" : "border-border text-muted-foreground"}`}
+          >
+            <Grid3x3 size={12} /> Grade
+          </button>
+          <div className="flex items-center gap-0.5 rounded-md border border-border overflow-hidden">
+            {(["S", "M", "L"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setNodeSize(s)}
+                className={`px-2 py-1 text-[11px] font-semibold ${nodeSize === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-primary/10"}`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 border-l border-border pl-2 ml-1">
+          <button onClick={undo} title="Desfazer" className="p-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/30">
+            <Undo2 size={14} />
+          </button>
+          <button onClick={exportPng} title="Exportar PNG" className="flex items-center gap-1 px-2 py-1.5 rounded-md text-xs border border-border hover:border-primary">
+            <Download size={12} /> PNG
+          </button>
+        </div>
+
+        <div className="relative ml-auto">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" size={12} />
+          <input
+            value={highlight}
+            onChange={(e) => setHighlight(e.target.value)}
+            placeholder="Destacar no painel..."
+            className="pl-7 pr-3 py-1.5 bg-input border border-border rounded-md text-xs outline-none focus:border-primary w-48"
+          />
+        </div>
+
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          {nodes.length} nós · {edges.length} conexões
+        </div>
+      </div>
+
       <div ref={containerRef} className="relative h-[70vh] rounded-2xl border border-primary/30 bg-card overflow-hidden cyber-grid">
         <TransformWrapper
+          ref={transformRef}
           minScale={0.2}
           maxScale={2.5}
           initialScale={initialScale}
@@ -460,20 +546,21 @@ function Page() {
                 >
                   <motion.div
                     whileHover={{ scale: 1.05 }}
-                    className={`w-[120px] rounded-xl border-2 bg-card p-2 text-center shadow-xl ${linking === n.id ? "border-primary glow pulse-glow" : ""}`}
-                    style={{ borderColor: linking === n.id ? undefined : STATUS_COLOR[n.status] }}
+                    className={`rounded-xl border-2 bg-card p-2 text-center shadow-xl transition-all ${linking === n.id ? "border-primary glow pulse-glow" : ""} ${highlight && !highlightMatch(n) ? "opacity-25" : ""} ${highlightMatch(n) ? "ring-2 ring-primary glow" : ""}`}
+                    style={{ width: SIZE_PX, borderColor: linking === n.id ? undefined : STATUS_COLOR[n.status] }}
                   >
                     {n.foto_url ? (
                       <img
                         src={n.foto_url}
                         alt={n.nome}
-                        className="h-16 w-16 mx-auto rounded-full object-cover border-2"
-                        style={{ borderColor: STATUS_COLOR[n.status] }}
+                        className="mx-auto rounded-full object-cover border-2"
+                        style={{ width: AVATAR_PX, height: AVATAR_PX, borderColor: STATUS_COLOR[n.status] }}
+                        crossOrigin="anonymous"
                       />
                     ) : (
                       <div
-                        className="h-16 w-16 mx-auto rounded-full bg-muted border-2 flex items-center justify-center font-bold"
-                        style={{ borderColor: STATUS_COLOR[n.status], color: STATUS_COLOR[n.status] }}
+                        className="mx-auto rounded-full bg-muted border-2 flex items-center justify-center font-bold"
+                        style={{ width: AVATAR_PX, height: AVATAR_PX, borderColor: STATUS_COLOR[n.status], color: STATUS_COLOR[n.status] }}
                       >
                         {n.nome[0]}
                       </div>
