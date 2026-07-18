@@ -34,16 +34,17 @@ function Page() {
             <h3 className="font-semibold">Aplicativo Desktop (Windows)</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Rode o JTC Investigação em uma janela dedicada de alta performance sem as barras do navegador. 
-            O aplicativo já vem pré-configurado com o ícone oficial do sistema.
+            Aplicativo desktop real (Electron) para Windows 10/11 x64. Roda em janela dedicada,
+            sem barras de navegador, com o ícone oficial do sistema. Baixe, extraia o .zip e execute
+            <span className="font-mono"> JTC Investigacao.exe</span>.
           </p>
           <a
-            href="/JTC_Investigacao.exe"
-            download="JTC_Investigacao.exe"
+            href="/__l5e/assets-v1/afd090f4-1ec7-4f34-a3ec-f92d8ca6b18c/JTC_Investigacao_Desktop.zip"
+            download="JTC_Investigacao_Desktop.zip"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/95 transition shadow-glow"
           >
             <Download size={14} />
-            Baixar Executável (.exe)
+            Baixar Aplicativo Windows (.zip · ~120 MB)
           </a>
         </div>
 
