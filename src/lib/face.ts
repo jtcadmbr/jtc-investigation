@@ -580,13 +580,18 @@ export function distance(a: Float32Array | number[], b: Float32Array | number[])
 //   d ≈ 0.50  → ~60%   (dúvida)
 //   d ≥ 0.72  → 0%     (diferente)
 export function similarity(d: number): number {
-  const LOW = 0.15;
-  const HIGH = 0.72;
-  if (d <= LOW) return 1;
-  if (d >= HIGH) return 0;
-  const x = (d - LOW) / (HIGH - LOW);
-  const s = 1 - x * x;
-  return Math.max(0, Math.min(1, s));
+  // Curva sigmoide calibrada: transição nítida na zona de decisão (0.42-0.55)
+  // - d ≤ 0.15  → ~100% (praticamente idêntica)
+  // - d ≈ 0.30  → ~95%  (mesma pessoa, ótimas condições)
+  // - d ≈ 0.40  → ~85%  (mesma pessoa, condições normais)
+  // - d ≈ 0.48  → ~55%  (zona de decisão — precisa validação humana)
+  // - d ≈ 0.55  → ~25%  (provável não-match)
+  // - d ≥ 0.70  → ~0%
+  if (d <= 0.10) return 1;
+  const CENTER = 0.48;
+  const STEEPNESS = 13;
+  const raw = 1 / (1 + Math.exp(STEEPNESS * (d - CENTER)));
+  return Math.max(0, Math.min(1, raw));
 }
 
 export function toArray(f: Float32Array): number[] {
