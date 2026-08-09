@@ -48,16 +48,6 @@ function Page() {
           </a>
         </div>
 
-        <div className="rounded-2xl border border-primary/20 bg-card p-5">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="text-primary" size={20} />
-            <h3 className="font-semibold">Central de Mídia</h3>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            /skill:video-creator add video nas cofigurações
-          </p>
-        </div>
-
         <button onClick={async () => { await signOut(); navigate({ to: "/login" }); }}
           className="rounded-2xl border border-destructive/40 bg-destructive/10 text-destructive p-5 text-left flex items-center gap-3 hover:bg-destructive/20 transition">
           <LogOut size={20} />
