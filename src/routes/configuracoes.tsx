@@ -65,7 +65,7 @@ function Page() {
 
     try {
       const { error } = await supabase.from("smtp_configs").insert({
-        user_id: user?.id,
+        user_id: user?.id || "",
         host,
         port,
         user_name,
