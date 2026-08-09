@@ -426,6 +426,51 @@ export type Database = {
           },
         ]
       }
+      smtp_configs: {
+        Row: {
+          created_at: string | null
+          from_email: string
+          from_name: string
+          host: string
+          id: string
+          is_active: boolean | null
+          password: string
+          port: number
+          purpose: Database["public"]["Enums"]["email_purpose"]
+          updated_at: string | null
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          from_email: string
+          from_name: string
+          host: string
+          id?: string
+          is_active?: boolean | null
+          password: string
+          port: number
+          purpose?: Database["public"]["Enums"]["email_purpose"]
+          updated_at?: string | null
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string | null
+          from_email?: string
+          from_name?: string
+          host?: string
+          id?: string
+          is_active?: boolean | null
+          password?: string
+          port?: number
+          purpose?: Database["public"]["Enums"]["email_purpose"]
+          updated_at?: string | null
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       uploads: {
         Row: {
           created_at: string
@@ -481,7 +526,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      email_purpose: "verification" | "recovery" | "general"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -608,6 +653,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      email_purpose: ["verification", "recovery", "general"],
+    },
   },
 } as const
