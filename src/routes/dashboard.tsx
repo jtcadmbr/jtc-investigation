@@ -153,7 +153,7 @@ function Page() {
               Central de investigação · JTCQI+
             </div>
             <h2 className="mt-2 text-3xl lg:text-4xl font-display font-bold gradient-text">
-              {stats.invest} {stats.invest === 1 ? "pessoa cadastrada" : "pessoas cadastradas"}
+              melhore o visual
             </h2>
             <p className="mt-2 text-sm text-muted-foreground max-w-xl">
               {stats.newWeek > 0
