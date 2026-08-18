@@ -137,6 +137,9 @@ function Page() {
 
   const onFile = (f: File | null) => {
     if (!f) return;
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      return toast.error("Busca por face indisponível offline — conecte-se à internet");
+    }
     if (!f.type.startsWith("image/")) return toast.error("Selecione uma imagem");
     const r = new FileReader();
     r.onload = () => {
