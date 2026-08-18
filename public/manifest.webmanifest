@@ -1,0 +1,16 @@
+{
+  "name": "JTCQI+ — Central de Investigação",
+  "short_name": "JTCQI+",
+  "description": "Banco de dados criptografado de pessoas, painel visual e busca por face.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#08080f",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
