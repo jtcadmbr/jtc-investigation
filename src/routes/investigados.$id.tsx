@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { InvestigadoForm } from "@/components/InvestigadoForm";
 import { ShareDialog } from "@/components/ShareDialog";
+import { useLightbox } from "@/components/ImageLightbox";
 
 export const Route = createFileRoute("/investigados/$id")({ component: Page });
 
@@ -31,6 +32,7 @@ function Page() {
   const [connOut, setConnOut] = useState<any[]>([]);
   const [connIn, setConnIn] = useState<any[]>([]);
   const [folderFiles, setFolderFiles] = useState<any[]>([]);
+  const lightbox = useLightbox();
 
   const load = async () => {
     const { data, error } = await supabase.from("investigateds").select("*").eq("id", id).maybeSingle();
@@ -68,7 +70,9 @@ function Page() {
         className="rounded-2xl border border-primary/30 bg-card p-6 glow">
         <div className="flex flex-col sm:flex-row items-start gap-6">
           {item.foto_url ? (
-            <img src={item.foto_url} alt={item.nome} className="h-32 w-32 rounded-full object-cover border-4 border-primary/50 glow" />
+            <button type="button" onClick={() => lightbox.open([{ url: item.foto_url, label: item.nome }])} className="rounded-full" aria-label="Ampliar foto principal">
+              <img src={item.foto_url} alt={item.nome} className="h-32 w-32 rounded-full object-cover border-4 border-primary/50 glow cursor-zoom-in" />
+            </button>
           ) : (
             <div className="h-32 w-32 rounded-full bg-muted border-4 border-primary/40 flex items-center justify-center text-5xl font-bold text-primary">
               {item.nome?.[0]?.toUpperCase()}
@@ -107,9 +111,11 @@ function Page() {
             <h3 className="text-xs uppercase tracking-widest text-primary mb-3">Galeria de fotos</h3>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
               {(item.fotos as string[]).map((u, i) => (
-                <a key={i} href={u} target="_blank" rel="noreferrer" className="aspect-square rounded-lg overflow-hidden border border-border hover:border-primary transition">
+                <button key={i} type="button"
+                  onClick={() => lightbox.open((item.fotos as string[]).map((x, k) => ({ url: x, label: `${item.nome} — Foto ${k + 1}` })), i)}
+                  className="aspect-square rounded-lg overflow-hidden border border-border hover:border-primary transition cursor-zoom-in">
                   <img src={u} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -120,14 +126,16 @@ function Page() {
             <h3 className="text-xs uppercase tracking-widest text-primary mb-3">Documentos</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {(item.documentos as any[]).map((d, i) => (
-                <a key={i} href={d.url} target="_blank" rel="noreferrer" className="rounded-lg overflow-hidden border border-border hover:border-primary transition block">
+                <button key={i} type="button"
+                  onClick={() => lightbox.open((item.documentos as any[]).map((x, k) => ({ url: x.url, label: x.label || `Documento ${k + 1}` })), i)}
+                  className="rounded-lg overflow-hidden border border-border hover:border-primary transition block w-full text-left cursor-zoom-in">
                   <div className="aspect-[4/3]">
                     <img src={d.url} alt={d.label || `Documento ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                   <div className="px-2 py-1.5 text-xs text-muted-foreground border-t border-border truncate">
                     {d.label || `Documento ${i + 1}`}
                   </div>
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -172,12 +180,21 @@ function Page() {
             <p className="text-[11px] text-muted-foreground italic">Nenhum arquivo nesta pasta. Vá em Uploads e mova arquivos para esta pessoa.</p>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-              {folderFiles.slice(0, 12).map((f) => (
-                <a key={f.id} href={f.url} target="_blank" rel="noreferrer" className="aspect-square rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center hover:border-primary transition">
-                  {f.tipo === "imagem" ? <img src={f.url} alt={f.nome} className="w-full h-full object-cover" loading="lazy" />
-                    : <div className="text-[10px] p-1 text-center text-muted-foreground truncate">{f.nome}</div>}
-                </a>
-              ))}
+              {folderFiles.slice(0, 12).map((f) => {
+                const images = folderFiles.filter((x) => x.tipo === "imagem");
+                const isImage = f.tipo === "imagem";
+                return isImage ? (
+                  <button key={f.id} type="button"
+                    onClick={() => lightbox.open(images.map((x) => ({ url: x.url, label: x.nome })), images.findIndex((x) => x.id === f.id))}
+                    className="aspect-square rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center hover:border-primary transition cursor-zoom-in">
+                    <img src={f.url} alt={f.nome} className="w-full h-full object-cover" loading="lazy" />
+                  </button>
+                ) : (
+                  <a key={f.id} href={f.url} target="_blank" rel="noreferrer" className="aspect-square rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center hover:border-primary transition">
+                    <div className="text-[10px] p-1 text-center text-muted-foreground truncate">{f.nome}</div>
+                  </a>
+                );
+              })}
             </div>
           )}
         </div>
@@ -185,6 +202,7 @@ function Page() {
 
       {editing && <InvestigadoForm initial={item} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); load(); }} />}
       {sharing && <ShareDialog investigatedId={item.id} nome={item.nome} onClose={() => setSharing(false)} />}
+      {lightbox.element}
     </AppShell>
   );
 }
