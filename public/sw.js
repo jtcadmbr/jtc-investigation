@@ -1,0 +1,124 @@
+/* JTCQI+ service worker — leitura offline de todo o sistema.
+   Estratégia:
+   - navegações e assets do app: cache-first com revalidação em background
+   - dados da API (Supabase REST GET): network-first com fallback para o cache
+   - imagens/arquivos (storage, signed URLs): cache-first
+   - busca por face (modelos de IA / pesos): NÃO é cacheada (exige internet) */
+
+const VERSION = "jtcqi-v1";
+const SHELL = `${VERSION}-shell`;
+const DATA = `${VERSION}-data`;
+const MEDIA = `${VERSION}-media`;
+
+const SHELL_URLS = ["/", "/manifest.webmanifest", "/logo.png", "/favicon.ico"];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(SHELL);
+      await Promise.allSettled(SHELL_URLS.map((url) => cache.add(url)));
+      await self.skipWaiting();
+    })(),
+  );
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k)),
+      );
+      await self.clients.claim();
+    })(),
+  );
+});
+
+const isFaceModel = (url) =>
+  /face-api|human|\/models?\//i.test(url.pathname) || /\.(bin|onnx)$/i.test(url.pathname);
+
+const isSupabaseRest = (url) =>
+  /\/rest\/v1\//.test(url.pathname) || /\/auth\/v1\//.test(url.pathname);
+
+const isSupabaseStorage = (url) => /\/storage\/v1\/object\//.test(url.pathname);
+
+async function cacheFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const hit = await cache.match(request);
+  if (hit) {
+    // revalida silenciosamente quando houver rede
+    fetch(request)
+      .then((res) => res.ok && cache.put(request, res.clone()))
+      .catch(() => undefined);
+    return hit;
+  }
+  const res = await fetch(request);
+  if (res.ok) cache.put(request, res.clone()).catch(() => undefined);
+  return res;
+}
+
+async function networkFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  try {
+    const res = await fetch(request);
+    if (res.ok) cache.put(request, res.clone()).catch(() => undefined);
+    return res;
+  } catch (err) {
+    const hit = await cache.match(request);
+    if (hit) return hit;
+    throw err;
+  }
+}
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (request.method !== "GET") return;
+
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch {
+    return;
+  }
+  if (!/^https?:$/.test(url.protocol)) return;
+
+  // modelos de reconhecimento facial ficam sempre online
+  if (isFaceModel(url)) return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      (async () => {
+        try {
+          const res = await fetch(request);
+          if (res.ok) {
+            const cache = await caches.open(SHELL);
+            cache.put("/", res.clone()).catch(() => undefined);
+          }
+          return res;
+        } catch {
+          const cache = await caches.open(SHELL);
+          return (
+            (await cache.match(request)) ||
+            (await cache.match("/")) ||
+            new Response("Offline", { status: 503, statusText: "Offline" })
+          );
+        }
+      })(),
+    );
+    return;
+  }
+
+  if (isSupabaseRest(url)) {
+    event.respondWith(networkFirst(request, DATA));
+    return;
+  }
+
+  if (isSupabaseStorage(url) || request.destination === "image" || request.destination === "font") {
+    event.respondWith(cacheFirst(request, MEDIA));
+    return;
+  }
+
+  if (url.origin === self.location.origin) {
+    event.respondWith(cacheFirst(request, SHELL));
+  }
+});
