@@ -58,14 +58,14 @@ const humanConfig: Partial<Config> = {
   } as any,
   face: {
     enabled: true,
-    detector: { rotation: true, maxDetected: 20, minConfidence: 0.18, return: false, iouThreshold: 0.25 },
+    detector: { rotation: true, maxDetected: 20, minConfidence: 0.15, return: false, iouThreshold: 0.4 },
     mesh: { enabled: true },
     iris: { enabled: true },
     description: { enabled: true },
-    emotion: { enabled: false },
+    emotion: { enabled: true }, // Ativado para maior riqueza biometria
     antispoof: { enabled: false },
     liveness: { enabled: false },
-    gear: { enabled: false },
+    gear: { enabled: true }, // Ativado para atributos adicionais (óculos, máscara, etc)
   },
   body: { enabled: false },
   hand: { enabled: false },
@@ -108,8 +108,8 @@ function qualityLabel(q: number): FaceCandidate["qualityLabel"] {
 }
 
 function prepareCanvas(img: HTMLImageElement, enhanced = false): HTMLCanvasElement {
-  const MAX = 1920;
-  const MIN = 900;
+  const MAX = 2048; // Aumentado para maior resolução de detalhes
+  const MIN = 1024; // Aumentado para evitar perda em fotos pequenas
   let w = img.naturalWidth;
   let h = img.naturalHeight;
   const longest = Math.max(w, h);
@@ -589,7 +589,7 @@ export function similarity(d: number): number {
   // - d ≥ 0.70  → ~0%
   if (d <= 0.10) return 1;
   const CENTER = 0.48;
-  const STEEPNESS = 13;
+  const STEEPNESS = 15; // Mais agressivo na separação de candidatos similares
   const raw = 1 / (1 + Math.exp(STEEPNESS * (d - CENTER)));
   return Math.max(0, Math.min(1, raw));
 }
