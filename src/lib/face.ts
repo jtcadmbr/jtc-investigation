@@ -108,8 +108,8 @@ function qualityLabel(q: number): FaceCandidate["qualityLabel"] {
 }
 
 function prepareCanvas(img: HTMLImageElement, enhanced = false): HTMLCanvasElement {
-  const MAX = 1920;
-  const MIN = 900;
+  const MAX = 2048; // Aumentado para maior resolução de detalhes
+  const MIN = 1024; // Aumentado para evitar perda em fotos pequenas
   let w = img.naturalWidth;
   let h = img.naturalHeight;
   const longest = Math.max(w, h);
