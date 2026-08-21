@@ -59,7 +59,7 @@ function LoginPage() {
             <Shield className="h-9 w-9 text-primary" />
             <div className="absolute -inset-2 rounded-3xl border border-primary/20 animate-pulse" />
           </motion.div>
-          <h1 className="text-4xl font-display font-bold tracking-tight gradient-text">JTCQI+</h1>
+          <h1 className="text-4xl font-display font-bold tracking-tight gradient-text">JTC INVESTIGATION</h1>
           <p className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground mt-2">
             Banco de Dados Criptografado de Pessoas
           </p>

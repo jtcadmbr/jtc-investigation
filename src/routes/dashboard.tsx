@@ -150,7 +150,7 @@ function Page() {
           <div className="relative">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary">
               <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse glow" />
-              Central de investigação · JTCQI+
+              Central de investigação · JTC INVESTIGATION
             </div>
             <h2 className="mt-2 text-3xl lg:text-4xl font-display font-bold gradient-text">
               {stats.invest} {stats.invest === 1 ? "pessoa cadastrada" : "pessoas cadastradas"}
