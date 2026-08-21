@@ -66,7 +66,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <div className="absolute -inset-px rounded-xl border border-primary/20" />
           </div>
           <div>
-            <div className="font-display font-bold tracking-tight text-lg gradient-text">JTCQI+</div>
+            <div className="font-display font-bold tracking-tight text-lg gradient-text">JTC INVESTIGATION</div>
             <div className="text-[10px] text-muted-foreground uppercase tracking-[0.25em]">Encrypted DB</div>
           </div>
         </Link>
@@ -128,19 +128,22 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           </div>
         </div>
         <button
-          onClick={async () => { await signOut(); navigate({ to: "/login" }); }}
-          className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition"
+          onClick={() => signOut()}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
         >
           <LogOut size={16} />
-          Sair
+          <span>Encerrar Sessão</span>
         </button>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <aside className="hidden md:flex w-72 shrink-0">{SidebarContent}</aside>
+    <div className="flex min-h-screen w-full bg-background overflow-hidden selection:bg-primary/30">
+      <div className="absolute inset-0 grid-background pointer-events-none opacity-20" />
+      <aside className="hidden w-72 md:flex flex-col shrink-0">
+        {SidebarContent}
+      </aside>
 
       <AnimatePresence>
         {open && (
@@ -171,7 +174,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               {open ? <X size={18} /> : <Menu size={18} />}
             </button>
             <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">JTCQI+ · Console</div>
+              <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">JTC INVESTIGATION · Console</div>
               <h1 className="text-lg md:text-xl font-display font-semibold tracking-tight truncate">{title}</h1>
             </div>
           </div>

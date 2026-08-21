@@ -170,7 +170,7 @@ function Page() {
         </motion.div>
 
         <p className="text-center text-[11px] text-muted-foreground mt-6">
-          JTCQI+ — visualização restrita pelo proprietário do registro.
+          JTC INVESTIGATION — visualização restrita pelo proprietário do registro.
         </p>
       </div>
     </div>
