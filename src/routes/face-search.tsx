@@ -703,7 +703,7 @@ function Page() {
               <ScanFace className="text-primary" size={20} />
             </div>
             <div className="flex-1">
-              <h2 className="font-bold text-lg">Olha é o seguinte eu quero que você o que está acontecendo</h2>
+              <h2 className="font-bold text-lg">Eu gostaria que você analisasse o projeto e colocasse um modelo mais forte grátis 100% grátis mais forte possível do Scanner de rosto</h2>
               <p className="text-xs text-muted-foreground mt-1">
                 Envie uma foto. O sistema extrairá métricas biométricas e características da pele, comparando-as com o banco de dados.
                 Processamento local de alta performance com inteligência artificial.
