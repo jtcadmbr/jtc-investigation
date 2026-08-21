@@ -589,7 +589,7 @@ export function similarity(d: number): number {
   // - d ≥ 0.70  → ~0%
   if (d <= 0.10) return 1;
   const CENTER = 0.48;
-  const STEEPNESS = 13;
+  const STEEPNESS = 15; // Mais agressivo na separação de candidatos similares
   const raw = 1 / (1 + Math.exp(STEEPNESS * (d - CENTER)));
   return Math.max(0, Math.min(1, raw));
 }
