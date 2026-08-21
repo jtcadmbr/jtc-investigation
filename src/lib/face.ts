@@ -58,14 +58,14 @@ const humanConfig: Partial<Config> = {
   } as any,
   face: {
     enabled: true,
-    detector: { rotation: true, maxDetected: 20, minConfidence: 0.18, return: false, iouThreshold: 0.25 },
+    detector: { rotation: true, maxDetected: 20, minConfidence: 0.15, return: false, iouThreshold: 0.4 },
     mesh: { enabled: true },
     iris: { enabled: true },
     description: { enabled: true },
-    emotion: { enabled: false },
+    emotion: { enabled: true }, // Ativado para maior riqueza biometria
     antispoof: { enabled: false },
     liveness: { enabled: false },
-    gear: { enabled: false },
+    gear: { enabled: true }, // Ativado para atributos adicionais (óculos, máscara, etc)
   },
   body: { enabled: false },
   hand: { enabled: false },
