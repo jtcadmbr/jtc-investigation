@@ -5,7 +5,7 @@
    - imagens/arquivos (storage, signed URLs): cache-first
    - busca por face (modelos de IA / pesos): NÃO é cacheada (exige internet) */
 
-const VERSION = "jtcqi-v3";
+const VERSION = "jtcqi-v4";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
@@ -71,6 +71,16 @@ async function networkFirst(request, cacheName) {
 }
 
 self.addEventListener("fetch", (event) => {
+  // O shell do Vite muda durante desenvolvimento e preview. Interceptá-lo
+  // pode combinar módulos de gerações diferentes e duplicar o React.
+  const hostname = self.location.hostname;
+  const isDevelopmentHost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".lovableproject.com") ||
+    hostname.includes("-preview--");
+  if (isDevelopmentHost) return;
+
   const { request } = event;
   if (request.method !== "GET") return;
 
