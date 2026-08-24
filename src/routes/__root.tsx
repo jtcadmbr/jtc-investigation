@@ -123,6 +123,22 @@ function useServiceWorker() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
+
+    // O preview usa módulos ESM transformados e reotimizados pelo Vite. Um
+    // service worker persistente pode misturar duas gerações desses módulos,
+    // criando duas instâncias de React e invalidando o dispatcher de hooks.
+    if (import.meta.env.DEV) {
+      void navigator.serviceWorker.getRegistrations().then((registrations) =>
+        Promise.all(registrations.map((registration) => registration.unregister())),
+      );
+      if ("caches" in window) {
+        void caches.keys().then((keys) =>
+          Promise.all(keys.filter((key) => key.startsWith("jtcqi-")).map((key) => caches.delete(key))),
+        );
+      }
+      return;
+    }
+
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
       .catch((err) => console.warn("Falha ao registrar o service worker", err));
