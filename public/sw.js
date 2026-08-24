@@ -5,7 +5,7 @@
    - imagens/arquivos (storage, signed URLs): cache-first
    - busca por face (modelos de IA / pesos): NÃO é cacheada (exige internet) */
 
-const VERSION = "jtcqi-v2";
+const VERSION = "jtcqi-v3";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
@@ -84,6 +84,18 @@ self.addEventListener("fetch", (event) => {
 
   // modelos de reconhecimento facial ficam sempre online
   if (isFaceModel(url)) return;
+
+  // nunca cachear artefatos do dev server / módulos versionados do Vite:
+  // servir uma versão antiga junto de outra nova quebra o React (hooks nulos)
+  if (
+    url.pathname.startsWith("/node_modules/") ||
+    url.pathname.startsWith("/@") ||
+    url.pathname.startsWith("/src/") ||
+    url.searchParams.has("v") ||
+    url.searchParams.has("t")
+  ) {
+    return;
+  }
 
   if (request.mode === "navigate") {
     event.respondWith(
