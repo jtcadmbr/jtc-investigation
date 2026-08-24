@@ -106,6 +106,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useServiceWorker();
+  useOfflineWarmup();
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -128,6 +129,58 @@ function useServiceWorker() {
   }, []);
 }
 
+/** Rotas que devem estar disponíveis mesmo sem internet. */
+const OFFLINE_ROUTES = [
+  "/dashboard",
+  "/investigados",
+  "/uploads",
+  "/pesquisa",
+  "/painel",
+  "/face-search",
+  "/configuracoes",
+  "/login",
+] as const;
+
+/**
+ * Baixa antecipadamente o código de todas as telas enquanto há conexão.
+ * Sem isso, navegar offline para uma rota nunca visitada falharia por
+ * ausência do chunk correspondente no cache do service worker.
+ */
+function useOfflineWarmup() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let cancelled = false;
+
+    const warm = async () => {
+      if (!navigator.onLine) return;
+      for (const path of OFFLINE_ROUTES) {
+        if (cancelled) return;
+        try {
+          await router.preloadRoute({ to: path });
+        } catch {
+          // rota protegida ou indisponível — segue para a próxima
+        }
+      }
+    };
+
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(() => void warm(), { timeout: 4000 })
+      : window.setTimeout(() => void warm(), 2000);
+
+    window.addEventListener("online", warm);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("online", warm);
+      if (window.cancelIdleCallback && typeof idle === "number") {
+        window.cancelIdleCallback(idle);
+      }
+    };
+  }, [router]);
+}
+
 /** Aviso fixo informando que o modo offline está ativo (busca por face indisponível). */
 function OfflineBanner() {
   const [offline, setOffline] = useState(false);
@@ -146,8 +199,14 @@ function OfflineBanner() {
   if (!offline) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-amber-500/40 bg-amber-500/15 px-4 py-2 text-center text-[11px] font-medium tracking-wide text-amber-200 backdrop-blur">
-      MODO OFFLINE — consultando dados salvos no dispositivo. A busca por face precisa de internet.
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex justify-center px-4 pb-4">
+      <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-medium tracking-wide text-foreground shadow-[var(--shadow-float)]">
+        <span className="h-2 w-2 shrink-0 rounded-full bg-[var(--danger)] pulse-glow-red" />
+        <span className="text-muted-foreground">
+          MODO OFFLINE — navegando com dados salvos no dispositivo. A busca por face precisa de internet.
+        </span>
+      </div>
     </div>
   );
 }
+

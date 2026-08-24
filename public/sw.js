@@ -5,7 +5,7 @@
    - imagens/arquivos (storage, signed URLs): cache-first
    - busca por face (modelos de IA / pesos): NÃO é cacheada (exige internet) */
 
-const VERSION = "jtcqi-v1";
+const VERSION = "jtcqi-v2";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
@@ -88,15 +88,16 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     event.respondWith(
       (async () => {
+        const cache = await caches.open(SHELL);
         try {
           const res = await fetch(request);
           if (res.ok) {
-            const cache = await caches.open(SHELL);
+            // guarda a rota específica e o shell genérico
+            cache.put(request, res.clone()).catch(() => undefined);
             cache.put("/", res.clone()).catch(() => undefined);
           }
           return res;
         } catch {
-          const cache = await caches.open(SHELL);
           return (
             (await cache.match(request)) ||
             (await cache.match("/")) ||
@@ -107,6 +108,7 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+
 
   if (isSupabaseRest(url)) {
     event.respondWith(networkFirst(request, DATA));
