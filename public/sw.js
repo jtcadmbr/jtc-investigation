@@ -5,7 +5,7 @@
    - imagens/arquivos (storage, signed URLs): cache-first
    - busca por face (modelos de IA / pesos): NÃO é cacheada (exige internet) */
 
-const VERSION = "jtcqi-v1";
+const VERSION = "jtcqi-v2";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
