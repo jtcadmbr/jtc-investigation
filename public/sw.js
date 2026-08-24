@@ -88,15 +88,16 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     event.respondWith(
       (async () => {
+        const cache = await caches.open(SHELL);
         try {
           const res = await fetch(request);
           if (res.ok) {
-            const cache = await caches.open(SHELL);
+            // guarda a rota específica e o shell genérico
+            cache.put(request, res.clone()).catch(() => undefined);
             cache.put("/", res.clone()).catch(() => undefined);
           }
           return res;
         } catch {
-          const cache = await caches.open(SHELL);
           return (
             (await cache.match(request)) ||
             (await cache.match("/")) ||
@@ -107,6 +108,7 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+
 
   if (isSupabaseRest(url)) {
     event.respondWith(networkFirst(request, DATA));
