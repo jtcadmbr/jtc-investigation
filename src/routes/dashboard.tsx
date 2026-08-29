@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Users, Upload, Network, Activity, ScanFace, Search,
-  Plus, ArrowUpRight, Sparkles, ShieldCheck, FileImage, Zap,
+  Users, Upload, Network, ScanFace, Search,
+  Plus, ArrowUpRight, Sparkles, ShieldCheck, FileImage,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -121,12 +121,12 @@ function Page() {
   const totalStatus = useMemo(() => Object.values(byStatus).reduce((a, b) => a + b, 0), [byStatus]);
 
   const kpis = [
-    { label: "Pessoas", value: stats.invest, icon: Users, hint: `${stats.newWeek} na semana`, tint: "from-emerald-500/25" },
-    { label: "Arquivos", value: stats.uploads, icon: Upload, hint: "todos os anexos", tint: "from-cyan-500/25" },
-    { label: "Conexões", value: stats.conn, icon: Network, hint: "vínculos entre pessoas", tint: "from-lime-500/25" },
-    { label: "Rostos indexados", value: stats.faces, icon: ScanFace, hint: "busca facial pronta", tint: "from-fuchsia-500/25" },
-    { label: "Painéis", value: stats.boards, icon: Sparkles, hint: "quadros visuais", tint: "from-amber-500/25" },
-    { label: "Sistema", value: "ATIVO", icon: ShieldCheck, hint: "criptografia ok", tint: "from-primary/25" },
+    { label: "Pessoas", value: stats.invest, icon: Users, hint: `${stats.newWeek} na semana` },
+    { label: "Arquivos", value: stats.uploads, icon: Upload, hint: "todos os anexos" },
+    { label: "Conexões", value: stats.conn, icon: Network, hint: "vínculos" },
+    { label: "Rostos", value: stats.faces, icon: ScanFace, hint: "busca facial" },
+    { label: "Painéis", value: stats.boards, icon: Sparkles, hint: "quadros visuais" },
+    { label: "Sistema ativo", value: "100%", icon: ShieldCheck, hint: "criptografia ok" },
   ];
 
   const quick = [
@@ -138,120 +138,98 @@ function Page() {
 
   return (
     <AppShell title="Dashboard">
-      {/* Hero */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden card-premium noise p-6 lg:p-8"
-      >
-        <div className="absolute inset-0 aurora opacity-70" />
-        <div className="absolute inset-0 cyber-grid opacity-30" />
-        <div className="absolute inset-0 scan-line" />
-        <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-center">
-          <div className="relative">
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse glow" />
-              Central de investigação · JTC INVESTIGATION
-            </div>
-            <h2 className="mt-2 text-3xl lg:text-4xl font-display font-bold gradient-text">
-              {stats.invest} {stats.invest === 1 ? "pessoa cadastrada" : "pessoas cadastradas"}
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-              {stats.newWeek > 0
-                ? `${stats.newWeek} nova(s) nos últimos 7 dias. `
-                : "Sem novos cadastros nesta semana. "}
-              {stats.faces} vetor(es) faciais prontos para busca instantânea.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link to="/investigados" className="btn-interactive rounded-lg bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 flex items-center gap-1.5 glow">
-                <Plus size={13} /> Nova pessoa
-              </Link>
-              <Link to="/face-search" className="rounded-lg border border-primary/40 bg-primary/10 text-primary text-xs font-semibold px-4 py-2 flex items-center gap-1.5 hover:bg-primary/20 transition">
-                <ScanFace size={13} /> Buscar por face
-              </Link>
-            </div>
-          </div>
-          <div className="relative w-full lg:w-[340px] rounded-xl border border-border/60 bg-background/40 backdrop-blur p-4">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-              Ingressos · últimos 30 dias
-            </div>
-            <Sparkline data={daily} />
-            <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1">
-              <span>30d atrás</span>
-              <span className="text-primary font-semibold">hoje</span>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* KPIs */}
-      <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {kpis.map((c, i) => (
-          <motion.div
-            key={c.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-            className={`relative overflow-hidden rounded-xl border border-border/70 bg-card/60 backdrop-blur p-4 bg-gradient-to-br ${c.tint} to-transparent hover-glow`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center">
-                <c.icon className="h-4 w-4 text-primary" />
-              </div>
-              <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{c.hint}</span>
-            </div>
-            <div className="mt-3 text-2xl font-display font-bold truncate">{c.value}</div>
-            <div className="text-[11px] text-muted-foreground uppercase tracking-wider">{c.label}</div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Grid principal */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Ações rápidas */}
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-          className="lg:col-span-1 rounded-2xl border border-primary/20 bg-card p-5"
+      <div className="overflow-hidden rounded-xl border border-border bg-background/40 shadow-[0_0_50px_-12px_oklch(0.54_0.23_285/0.25)]">
+        {/* Hero — leitura principal */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          className="relative border-b border-border bg-gradient-to-b from-card/40 to-transparent p-6 lg:p-8"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <Zap className="text-primary" size={16} />
-            <h3 className="font-semibold">Ações rápidas</h3>
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary font-sans">
+                Total de pessoas cadastradas
+              </h2>
+              <div className="mt-2 flex flex-wrap items-baseline gap-4">
+                <span className="font-display text-5xl lg:text-6xl tracking-tighter">{stats.invest}</span>
+                <span className="rounded border border-accent/30 bg-accent/10 px-2 py-1 text-xs font-bold text-accent">
+                  {stats.newWeek > 0 ? `+${stats.newWeek} na semana` : "estável"}
+                </span>
+              </div>
+              <p className="mt-3 max-w-lg text-sm text-muted-foreground">
+                {stats.faces} vetor(es) faciais prontos para busca instantânea.
+              </p>
+            </div>
+            <div className="relative w-full md:w-64">
+              <Sparkline data={daily} />
+              <div className="mt-2 flex items-center justify-between text-[10px] font-bold uppercase text-primary">
+                <span>30d atrás</span>
+                <span>histórico 30 dias</span>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {quick.map((q) => (
-              <Link
-                key={q.to}
-                to={q.to}
-                className="group flex flex-col gap-1 rounded-xl border border-border p-3 hover:border-primary/60 hover:bg-primary/5 transition"
-              >
-                <q.icon size={16} className="text-primary" />
-                <div className="text-sm font-semibold">{q.label}</div>
-                <div className="text-[10px] text-muted-foreground">{q.desc}</div>
-              </Link>
-            ))}
+        </motion.section>
+
+        {/* KPI strip */}
+        <section className="grid grid-cols-2 gap-px border-b border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
+          {kpis.map((c, i) => (
+            <motion.div
+              key={c.label}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
+              className="group bg-background p-5 transition-colors hover:bg-card"
+            >
+              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                <c.icon className="h-3 w-3" />
+                {c.label}
+              </div>
+              <div className="mt-1 font-display text-xl truncate">{c.value}</div>
+              <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{c.hint}</div>
+            </motion.div>
+          ))}
+        </section>
+
+        {/* Ações rápidas + Status */}
+        <section className="flex flex-col gap-8 p-6 lg:flex-row lg:p-8">
+          <div className="flex-1 space-y-5">
+            <h3 className="flex items-center gap-3 font-display text-sm uppercase tracking-wider">
+              Ações rápidas <span className="h-px flex-1 bg-border" />
+            </h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {quick.map((q) => (
+                <Link
+                  key={q.to}
+                  to={q.to}
+                  className="group flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-all hover:border-primary"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold truncate">{q.label}</span>
+                    <span className="block text-[10px] uppercase tracking-wider text-muted-foreground">{q.desc}</span>
+                  </span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-secondary transition-colors group-hover:bg-primary">
+                    <q.icon size={15} />
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-border">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="text-primary" size={14} />
-              <h4 className="text-xs uppercase tracking-widest text-muted-foreground">Por status</h4>
-            </div>
+          <div className="w-full space-y-5 lg:w-80">
+            <h3 className="flex items-center gap-3 font-display text-sm uppercase tracking-wider">
+              Status <span className="h-px flex-1 bg-border" />
+            </h3>
             {statusList.length === 0 ? (
               <p className="text-xs text-muted-foreground">Sem dados ainda.</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {statusList.map(([label, n]) => {
                   const pct = totalStatus ? (n / totalStatus) * 100 : 0;
                   return (
-                    <div key={label}>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="capitalize truncate">{label}</span>
-                        <span className="text-muted-foreground">{n}</span>
+                    <div key={label} className="space-y-1.5">
+                      <div className="flex justify-between text-[10px] font-bold uppercase">
+                        <span className="truncate text-primary">{label}</span>
+                        <span>{n}</span>
                       </div>
-                      <div className="h-1.5 bg-input rounded-full overflow-hidden mt-1">
-                        <div
-                          className="h-full bg-gradient-to-r from-primary to-accent"
-                          style={{ width: `${pct}%` }}
-                        />
+                      <div className="h-1 overflow-hidden rounded-full bg-secondary">
+                        <div className="h-full bg-primary glow" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );
@@ -259,102 +237,91 @@ function Page() {
               </div>
             )}
           </div>
-        </motion.div>
+        </section>
 
-        {/* Pessoas recentes */}
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-          className="lg:col-span-2 rounded-2xl border border-primary/20 bg-card p-5"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Users className="text-primary" size={16} />
-              <h3 className="font-semibold">Pessoas recentes</h3>
+        {/* Listas */}
+        <section className="grid grid-cols-1 gap-8 border-t border-border bg-card/20 p-6 lg:grid-cols-2 lg:p-8">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-display text-xs uppercase tracking-[0.2em]">Pessoas recentes</h4>
+              <Link to="/investigados" className="flex items-center gap-1 text-[10px] font-bold uppercase text-primary hover:underline">
+                Ver todas <ArrowUpRight size={11} />
+              </Link>
             </div>
-            <Link to="/investigados" className="text-xs text-primary hover:underline flex items-center gap-1">
-              Ver todas <ArrowUpRight size={12} />
-            </Link>
-          </div>
-          {recentPeople.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              Nenhuma pessoa cadastrada ainda.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {recentPeople.map((p) => (
-                <Link
-                  key={p.id}
-                  to="/investigados/$id"
-                  params={{ id: p.id }}
-                  className="flex items-center gap-3 rounded-xl border border-border p-3 hover:border-primary/50 hover:bg-primary/5 transition"
-                >
-                  {p.foto_url ? (
-                    <img src={p.foto_url} alt={p.nome} className="h-11 w-11 rounded-lg object-cover border border-primary/30" />
-                  ) : (
-                    <div className="h-11 w-11 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold">
-                      {p.nome.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="font-semibold truncate text-sm">{p.nome}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
-                      {p.status || "sem status"} · {fmtRelative(p.created_at)}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Uploads recentes */}
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-        className="mt-4 rounded-2xl border border-primary/20 bg-card p-5"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <FileImage className="text-primary" size={16} />
-            <h3 className="font-semibold">Últimos arquivos</h3>
-          </div>
-          <Link to="/uploads" className="text-xs text-primary hover:underline flex items-center gap-1">
-            Todos <ArrowUpRight size={12} />
-          </Link>
-        </div>
-        {recentUploads.length === 0 ? (
-          <div className="text-center py-6 text-sm text-muted-foreground">
-            Nenhum arquivo enviado ainda.
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {recentUploads.map((u) => {
-              const isImg = u.mime?.startsWith("image/");
-              return (
-                <a
-                  key={u.id}
-                  href={u.url ?? "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group rounded-xl border border-border overflow-hidden hover:border-primary/60 transition"
-                >
-                  <div className="aspect-square bg-input flex items-center justify-center overflow-hidden">
-                    {isImg && u.url ? (
-                      <img src={u.url} alt={u.nome} className="h-full w-full object-cover group-hover:scale-105 transition" />
+            {recentPeople.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma pessoa cadastrada ainda.</p>
+            ) : (
+              <div className="space-y-2">
+                {recentPeople.map((p) => (
+                  <Link
+                    key={p.id}
+                    to="/investigados/$id"
+                    params={{ id: p.id }}
+                    className="flex items-center gap-4 rounded border border-border bg-card p-3 transition-colors hover:bg-secondary"
+                  >
+                    {p.foto_url ? (
+                      <img src={p.foto_url} alt={p.nome} className="h-10 w-10 rounded border border-primary/20 object-cover" />
                     ) : (
-                      <FileImage className="text-muted-foreground" size={28} />
+                      <div className="flex h-10 w-10 items-center justify-center rounded border border-primary/20 bg-background text-xs font-bold text-primary">
+                        {p.nome.charAt(0).toUpperCase()}
+                      </div>
                     )}
-                  </div>
-                  <div className="p-2">
-                    <div className="text-[11px] font-medium truncate">{u.nome}</div>
-                    <div className="text-[9px] text-muted-foreground">{fmtRelative(u.created_at)}</div>
-                  </div>
-                </a>
-              );
-            })}
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold">{p.nome}</div>
+                      <div className="truncate text-[10px] uppercase text-primary">
+                        {p.status || "sem status"} · {fmtRelative(p.created_at)}
+                      </div>
+                    </div>
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-accent glow" />
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </motion.div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-display text-xs uppercase tracking-[0.2em]">Últimos arquivos</h4>
+              <Link to="/uploads" className="flex items-center gap-1 text-[10px] font-bold uppercase text-primary hover:underline">
+                Todos <ArrowUpRight size={11} />
+              </Link>
+            </div>
+            {recentUploads.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">Nenhum arquivo enviado ainda.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {recentUploads.map((u) => {
+                  const isImg = u.mime?.startsWith("image/");
+                  return (
+                    <a
+                      key={u.id}
+                      href={u.url ?? "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group relative aspect-square rounded border border-border bg-background p-1 transition-colors hover:border-primary"
+                    >
+                      <div className="relative h-full w-full overflow-hidden rounded bg-card">
+                        {isImg && u.url ? (
+                          <img src={u.url} alt={u.nome} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <FileImage className="text-muted-foreground" size={22} />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-primary/20 opacity-0 transition-opacity group-hover:opacity-100" />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-1.5 pb-1 pt-4">
+                          <div className="truncate text-[8px] font-bold uppercase tracking-tighter">{u.nome}</div>
+                          <div className="text-[8px] text-muted-foreground">{fmtRelative(u.created_at)}</div>
+                        </div>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
     </AppShell>
   );
 }
