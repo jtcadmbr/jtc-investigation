@@ -121,12 +121,12 @@ function Page() {
   const totalStatus = useMemo(() => Object.values(byStatus).reduce((a, b) => a + b, 0), [byStatus]);
 
   const kpis = [
-    { label: "Pessoas", value: stats.invest, icon: Users, hint: `${stats.newWeek} na semana`, tint: "from-emerald-500/25" },
-    { label: "Arquivos", value: stats.uploads, icon: Upload, hint: "todos os anexos", tint: "from-cyan-500/25" },
-    { label: "Conexões", value: stats.conn, icon: Network, hint: "vínculos entre pessoas", tint: "from-lime-500/25" },
-    { label: "Rostos indexados", value: stats.faces, icon: ScanFace, hint: "busca facial pronta", tint: "from-fuchsia-500/25" },
-    { label: "Painéis", value: stats.boards, icon: Sparkles, hint: "quadros visuais", tint: "from-amber-500/25" },
-    { label: "Sistema", value: "ATIVO", icon: ShieldCheck, hint: "criptografia ok", tint: "from-primary/25" },
+    { label: "Pessoas", value: stats.invest, icon: Users, hint: `${stats.newWeek} na semana` },
+    { label: "Arquivos", value: stats.uploads, icon: Upload, hint: "todos os anexos" },
+    { label: "Conexões", value: stats.conn, icon: Network, hint: "vínculos" },
+    { label: "Rostos", value: stats.faces, icon: ScanFace, hint: "busca facial" },
+    { label: "Painéis", value: stats.boards, icon: Sparkles, hint: "quadros visuais" },
+    { label: "Sistema ativo", value: "100%", icon: ShieldCheck, hint: "criptografia ok" },
   ];
 
   const quick = [
