@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Users, Upload, Network, Activity, ScanFace, Search,
-  Plus, ArrowUpRight, Sparkles, ShieldCheck, FileImage, Zap,
+  Users, Upload, Network, ScanFace, Search,
+  Plus, ArrowUpRight, Sparkles, ShieldCheck, FileImage,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
