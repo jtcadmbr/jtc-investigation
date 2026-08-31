@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Upload as UploadIcon, Search, Trash2, FileText, Film, Download, Pencil, Check, X as XIcon, Folder, FolderOpen, ArrowLeft, FolderInput, Users } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import { cq } from "@/lib/offline-cache";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -43,8 +44,10 @@ function Page() {
   const load = async () => {
     setLoading(true);
     const [{ data: up }, { data: pp }] = await Promise.all([
-      supabase.from("uploads").select("*").order("created_at", { ascending: false }),
-      supabase.from("investigateds").select("id,nome,foto_url").order("nome"),
+      cq<any[]>("uploads.all", () =>
+        supabase.from("uploads").select("*").order("created_at", { ascending: false })),
+      cq<any[]>("uploads.people", () =>
+        supabase.from("investigateds").select("id,nome,foto_url").order("nome")),
     ]);
     setItems(up || []);
     setPeople(pp || []);
