@@ -97,7 +97,11 @@ function Page() {
 
   useEffect(() => {
     cq<any[]>("investigateds.all", () => supabase.from("investigateds").select("*"))
-      .then(({ data }) => setAll(data || []));
+      .then(({ data, offline, error }) => {
+        setAll(data || []);
+        if (error) toast.error(error.message);
+        else if (offline) toast.info("Modo offline — exibindo dados salvos no dispositivo.");
+      });
   }, []);
 
   const results = useMemo(() => {

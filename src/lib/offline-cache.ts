@@ -61,19 +61,30 @@ export async function cq<T>(
     if (res.error) {
       if (isNetworkFailure(res.error.message)) {
         const cached = readCache<T>(key);
-        if (cached !== null) return { data: cached, error: null, offline: true };
+        if (cached !== null) {
+          // If network failed but we have cached data, return cached data as successful offline.
+          return { data: cached, error: null, offline: true };
+        }
       }
+      // If there's an error and no cached data, or not a network failure, return the error.
       return { ...res, offline: false };
     }
+    // If successful, cache data and return.
     if (res.data !== null && res.data !== undefined) writeCache(key, res.data);
     return { ...res, offline: false };
   } catch (err) {
+    // Catch any synchronous errors from `run()` or other parts of the try block.
     const cached = readCache<T>(key);
-    if (cached !== null) return { data: cached, error: null, offline: true };
+    const errorMessage = err instanceof Error ? err.message : "Sem conexão";
+    if (cached !== null && isNetworkFailure(errorMessage)) {
+      // If caught error is a network failure and we have cached data, return cached data.
+      return { data: cached, error: null, offline: true };
+    }
+    // Otherwise, return error, potentially with `offline: true` if it was a network failure and no data.
     return {
       data: null,
-      error: { message: err instanceof Error ? err.message : "Sem conexão" },
-      offline: true,
+      error: { message: errorMessage },
+      offline: true, // Assuming most caught errors here are related to network issues or inability to fetch.
     };
   }
 }

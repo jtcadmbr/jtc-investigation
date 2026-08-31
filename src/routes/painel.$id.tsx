@@ -65,7 +65,7 @@ function Page() {
   const [showLayouts, setShowLayouts] = useState(false);
   const [highlight, setHighlight] = useState("");
   const [applying, setApplying] = useState(false);
-  const historyRef = useRef<Node[][]>([]);
+  historyRef.current = historyRef.current || []; // Ensure historyRef.current is initialized
   const pushHistory = (snap: Node[]) => {
     historyRef.current.push(snap.map((n) => ({ ...n })));
     if (historyRef.current.length > 30) historyRef.current.shift();
@@ -133,10 +133,13 @@ function Page() {
       cq<any[]>(`connections.${boardId}`, () =>
         supabase.from("connections").select("*").eq("board_id", boardId)),
     ]);
-    if (!b.data) {
-      toast.error("Painel não encontrado");
+    if (!b.data && b.error) {
+      toast.error(b.error.message);
       navigate({ to: "/painel" });
       return;
+    }
+    if (!b.data && b.offline) {
+      toast.info("Modo offline — painel carregado do cache.");
     }
     setBoard(b.data);
     setNodes(
@@ -639,7 +642,7 @@ function Page() {
               const ch = containerRef.current?.clientHeight ?? 0;
               const s = transformState.scale || 1;
               try {
-                transformRef.current?.setTransform(cw / 2 - targetX * s, ch / 2 - targetY * s, s, 300, "easeOut");
+                transformRef.current?.setTransform(cw / 2 - targetX * s, ch / 2 - targetY * s, ch / s * s / 3000, 300, "easeOut");
               } catch {}
             }}
           >

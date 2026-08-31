@@ -30,7 +30,7 @@ function Page() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await cq<Board[]>("boards.all", () =>
+    const { data, offline, error } = await cq<Board[]>("boards.all", () =>
       supabase.from("boards").select("*").order("created_at", { ascending: false }));
     setBoards((data as Board[]) || []);
     if (data && data.length) {
@@ -42,6 +42,8 @@ function Page() {
       });
       setCounts(map);
     }
+    if (error) toast.error(error.message);
+    else if (offline) toast.info("Modo offline — exibindo dados salvos no dispositivo.");
     setLoading(false);
   };
   useEffect(() => {

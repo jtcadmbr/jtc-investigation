@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { isOffline } from "@/lib/offline-cache";
 
 const navGroups = [
   {
@@ -38,12 +39,29 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const navigate = useNavigate();
   const { location } = useRouterState();
   const [open, setOpen] = useState(false);
+  const [offlineStatus, setOfflineStatus] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
   }, [user, loading, navigate]);
 
   useEffect(() => { setOpen(false); }, [location.pathname]);
+
+  useEffect(() => {
+    const handleOnline = () => setOfflineStatus(false);
+    const handleOffline = () => setOfflineStatus(true);
+    
+    // Initial check
+    setOfflineStatus(isOffline());
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   if (loading || !user) {
     return (
@@ -196,8 +214,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-accent glow" />
             </button>
             <div className="hidden sm:flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-muted-foreground pl-2 border-l border-border/60 ml-1">
-              <span className="h-2 w-2 rounded-full bg-accent glow animate-pulse" />
-              Online
+              <span className={`h-2 w-2 rounded-full ${offlineStatus ? 'bg-danger pulse-glow-red' : 'bg-accent glow animate-pulse'}`} />
+              {offlineStatus ? 'Offline' : 'Online'}
             </div>
           </div>
         </header>

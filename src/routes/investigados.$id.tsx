@@ -34,15 +34,33 @@ function Page() {
   const [connIn, setConnIn] = useState<any[]>([]);
   const [folderFiles, setFolderFiles] = useState<any[]>([]);
   const lightbox = useLightbox();
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { data, error } = await cq<any>(`investigated.${id}`, () =>
+    setLoading(true);
+    const { data, error, offline } = await cq<any>(`investigated.${id}`, () =>
       supabase.from("investigateds").select("*").eq("id", id).maybeSingle());
-    // Offline e sem esta ficha em cache: tenta recuperá-la da listagem cacheada.
-    const resolved = data ?? findCachedInvestigated(id);
-    if (error && !resolved) toast.error(error.message);
-    setItem(resolved);
-    const [{ data: out }, { data: inn }, { data: files }] = await Promise.all([
+    
+    let resolvedItem = data;
+
+    if (!resolvedItem) {
+      // If no data from network, try finding in general cached list
+      resolvedItem = findCachedInvestigated(id);
+      if (resolvedItem) {
+        toast.info("Modo offline — carregando dados do cache da listagem.");
+      }
+    }
+    
+    if (error && !resolvedItem) {
+      toast.error(error.message);
+    } else if (offline && resolvedItem) {
+      toast.info("Modo offline — exibindo dados salvos no dispositivo.");
+    }
+
+    setItem(resolvedItem);
+
+    // Fetch related data. If the main item failed, these will also likely be offline.
+    const [{ data: outData, offline: outOffline }, { data: inData, offline: inOffline }, { data: filesData, offline: filesOffline }] = await Promise.all([
       cq<any[]>(`conn.out.${id}`, () =>
         supabase.from("connections").select("rotulo,to_id,investigateds!connections_to_id_fkey(id,nome,foto_url)").eq("from_id", id)),
       cq<any[]>(`conn.in.${id}`, () =>
@@ -50,9 +68,14 @@ function Page() {
       cq<any[]>(`uploads.person.${id}`, () =>
         supabase.from("uploads").select("*").eq("investigated_id", id).order("created_at", { ascending: false })),
     ]);
-    setConnOut(out || []);
-    setConnIn(inn || []);
-    setFolderFiles(files ?? cachedUploadsFor(id));
+
+    setConnOut(outData || []);
+    setConnIn(inData || []);
+    
+    // For folder files, prioritize fetched data, but fallback to direct cached uploads if needed
+    setFolderFiles(filesData ?? cachedUploadsFor(id));
+
+    setLoading(false);
   };
   useEffect(() => { load(); }, [id]);
 
@@ -63,7 +86,18 @@ function Page() {
     else { toast.success("Removido"); navigate({ to: "/investigados" }); }
   };
 
-  if (!item) return <AppShell title="Pessoa"><div className="text-center text-muted-foreground py-12">Carregando...</div></AppShell>;
+  if (loading) return <AppShell title="Pessoa"><div className="text-center text-muted-foreground py-12">Carregando...</div></AppShell>;
+  
+  if (!item) return (
+    <AppShell title="Pessoa">
+      <Link to="/investigados" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-5">
+        <ArrowLeft size={16} /> Voltar
+      </Link>
+      <div className="text-center text-muted-foreground py-12">
+        Pessoa não encontrada ou inacessível offline.
+      </div>
+    </AppShell>
+  );
 
   const entries = Object.entries(FIELD_LABELS).filter(([k]) => item[k]);
 
