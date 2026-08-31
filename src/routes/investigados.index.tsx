@@ -32,9 +32,14 @@ function Page() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("investigateds").select("*").order("created_at", { ascending: false });
-    if (error) toast.error(error.message); else setItems(data || []);
+    const { data, error, offline } = await cq<any[]>("investigateds.all", () =>
+      supabase.from("investigateds").select("*").order("created_at", { ascending: false }),
+    );
+    if (error) toast.error(error.message);
+    else {
+      setItems(data || []);
+      if (offline) toast.info("Modo offline — exibindo dados salvos no dispositivo.");
+    }
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
