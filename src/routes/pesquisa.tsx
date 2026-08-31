@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Search, Filter, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import { cq } from "@/lib/offline-cache";
 
 export const Route = createFileRoute("/pesquisa")({ component: Page });
 
@@ -95,7 +96,8 @@ function Page() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    supabase.from("investigateds").select("*").then(({ data }) => setAll(data || []));
+    cq<any[]>("investigateds.all", () => supabase.from("investigateds").select("*"))
+      .then(({ data }) => setAll(data || []));
   }, []);
 
   const results = useMemo(() => {

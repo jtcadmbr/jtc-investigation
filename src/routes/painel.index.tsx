@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Plus, Network, Trash2, Pencil, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import { cq } from "@/lib/offline-cache";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -29,15 +30,12 @@ function Page() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("boards")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { data } = await cq<Board[]>("boards.all", () =>
+      supabase.from("boards").select("*").order("created_at", { ascending: false }));
     setBoards((data as Board[]) || []);
     if (data && data.length) {
-      const { data: nodes } = await supabase
-        .from("panel_nodes")
-        .select("board_id");
+      const { data: nodes } = await cq<any[]>("panel_nodes.board_ids", () =>
+        supabase.from("panel_nodes").select("board_id"));
       const map: Record<string, number> = {};
       (nodes || []).forEach((n: any) => {
         map[n.board_id] = (map[n.board_id] || 0) + 1;

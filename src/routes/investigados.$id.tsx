@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { InvestigadoForm } from "@/components/InvestigadoForm";
 import { ShareDialog } from "@/components/ShareDialog";
 import { useLightbox } from "@/components/ImageLightbox";
+import { cq, findCachedInvestigated, cachedUploadsFor } from "@/lib/offline-cache";
 
 export const Route = createFileRoute("/investigados/$id")({ component: Page });
 
@@ -35,17 +36,23 @@ function Page() {
   const lightbox = useLightbox();
 
   const load = async () => {
-    const { data, error } = await supabase.from("investigateds").select("*").eq("id", id).maybeSingle();
-    if (error) toast.error(error.message);
-    setItem(data);
+    const { data, error } = await cq<any>(`investigated.${id}`, () =>
+      supabase.from("investigateds").select("*").eq("id", id).maybeSingle());
+    // Offline e sem esta ficha em cache: tenta recuperá-la da listagem cacheada.
+    const resolved = data ?? findCachedInvestigated(id);
+    if (error && !resolved) toast.error(error.message);
+    setItem(resolved);
     const [{ data: out }, { data: inn }, { data: files }] = await Promise.all([
-      supabase.from("connections").select("rotulo,to_id,investigateds!connections_to_id_fkey(id,nome,foto_url)").eq("from_id", id),
-      supabase.from("connections").select("rotulo,from_id,investigateds!connections_from_id_fkey(id,nome,foto_url)").eq("to_id", id),
-      supabase.from("uploads").select("*").eq("investigated_id", id).order("created_at", { ascending: false }),
+      cq<any[]>(`conn.out.${id}`, () =>
+        supabase.from("connections").select("rotulo,to_id,investigateds!connections_to_id_fkey(id,nome,foto_url)").eq("from_id", id)),
+      cq<any[]>(`conn.in.${id}`, () =>
+        supabase.from("connections").select("rotulo,from_id,investigateds!connections_from_id_fkey(id,nome,foto_url)").eq("to_id", id)),
+      cq<any[]>(`uploads.person.${id}`, () =>
+        supabase.from("uploads").select("*").eq("investigated_id", id).order("created_at", { ascending: false })),
     ]);
     setConnOut(out || []);
     setConnIn(inn || []);
-    setFolderFiles(files || []);
+    setFolderFiles(files ?? cachedUploadsFor(id));
   };
   useEffect(() => { load(); }, [id]);
 

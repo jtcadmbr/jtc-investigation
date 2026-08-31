@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { InvestigadoForm } from "@/components/InvestigadoForm";
 import { useRealtime } from "@/hooks/use-realtime";
+import { cq } from "@/lib/offline-cache";
 
 export const Route = createFileRoute("/investigados/")({ component: Page });
 
@@ -32,9 +33,14 @@ function Page() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("investigateds").select("*").order("created_at", { ascending: false });
-    if (error) toast.error(error.message); else setItems(data || []);
+    const { data, error, offline } = await cq<any[]>("investigateds.all", () =>
+      supabase.from("investigateds").select("*").order("created_at", { ascending: false }),
+    );
+    if (error) toast.error(error.message);
+    else {
+      setItems(data || []);
+      if (offline) toast.info("Modo offline — exibindo dados salvos no dispositivo.");
+    }
     setLoading(false);
   };
   useEffect(() => { load(); }, []);

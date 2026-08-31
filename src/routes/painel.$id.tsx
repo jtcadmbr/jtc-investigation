@@ -6,6 +6,7 @@ import { Plus, Search, X, Link2, ArrowLeft, Download, Undo2, Grid3x3, Maximize2,
 import { toPng } from "html-to-image";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import { cq } from "@/lib/offline-cache";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -122,12 +123,15 @@ function Page() {
 
   const load = async () => {
     const [b, pn, conn] = await Promise.all([
-      supabase.from("boards").select("titulo").eq("id", boardId).maybeSingle(),
-      supabase
-        .from("panel_nodes")
-        .select("id, pos_x, pos_y, investigated_id, investigateds(id, nome, foto_url, status)")
-        .eq("board_id", boardId),
-      supabase.from("connections").select("*").eq("board_id", boardId),
+      cq<any>(`board.${boardId}`, () =>
+        supabase.from("boards").select("titulo").eq("id", boardId).maybeSingle()),
+      cq<any[]>(`panel_nodes.${boardId}`, () =>
+        supabase
+          .from("panel_nodes")
+          .select("id, pos_x, pos_y, investigated_id, investigateds(id, nome, foto_url, status)")
+          .eq("board_id", boardId)),
+      cq<any[]>(`connections.${boardId}`, () =>
+        supabase.from("connections").select("*").eq("board_id", boardId)),
     ]);
     if (!b.data) {
       toast.error("Painel não encontrado");
