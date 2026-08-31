@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import { cq, cqCount } from "@/lib/offline-cache";
 import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/dashboard")({ component: Page });
@@ -73,24 +74,24 @@ function Page() {
     const weekAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
     const monthAgo = new Date(Date.now() - 30 * 86400_000).toISOString();
     const [a, b, c, d, e, weekCount, people, uploads, statusRows, monthRows] = await Promise.all([
-      supabase.from("investigateds").select("id", { count: "exact", head: true }),
-      supabase.from("uploads").select("id", { count: "exact", head: true }),
-      supabase.from("connections").select("id", { count: "exact", head: true }),
-      supabase.from("boards").select("id", { count: "exact", head: true }),
-      supabase.from("face_embeddings").select("id", { count: "exact", head: true }),
-      supabase.from("investigateds").select("id", { count: "exact", head: true }).gte("created_at", weekAgo),
-      supabase.from("investigateds").select("id,nome,status,foto_url,created_at").order("created_at", { ascending: false }).limit(6),
-      supabase.from("uploads").select("id,nome,url,mime,created_at").order("created_at", { ascending: false }).limit(5),
-      supabase.from("investigateds").select("status"),
-      supabase.from("investigateds").select("created_at").gte("created_at", monthAgo),
+      cqCount("count.investigateds", () => supabase.from("investigateds").select("id", { count: "exact", head: true })),
+      cqCount("count.uploads", () => supabase.from("uploads").select("id", { count: "exact", head: true })),
+      cqCount("count.connections", () => supabase.from("connections").select("id", { count: "exact", head: true })),
+      cqCount("count.boards", () => supabase.from("boards").select("id", { count: "exact", head: true })),
+      cqCount("count.faces", () => supabase.from("face_embeddings").select("id", { count: "exact", head: true })),
+      cqCount("count.week", () => supabase.from("investigateds").select("id", { count: "exact", head: true }).gte("created_at", weekAgo)),
+      cq<RecentPerson[]>("dash.people", () => supabase.from("investigateds").select("id,nome,status,foto_url,created_at").order("created_at", { ascending: false }).limit(6)),
+      cq<RecentUpload[]>("dash.uploads", () => supabase.from("uploads").select("id,nome,url,mime,created_at").order("created_at", { ascending: false }).limit(5)),
+      cq<{ status: string | null }[]>("dash.status", () => supabase.from("investigateds").select("status")),
+      cq<{ created_at: string }[]>("dash.month", () => supabase.from("investigateds").select("created_at").gte("created_at", monthAgo)),
     ]);
     setStats({
-      invest: a.count ?? 0,
-      uploads: b.count ?? 0,
-      conn: c.count ?? 0,
-      boards: d.count ?? 0,
-      faces: e.count ?? 0,
-      newWeek: weekCount.count ?? 0,
+      invest: a,
+      uploads: b,
+      conn: c,
+      boards: d,
+      faces: e,
+      newWeek: weekCount,
     });
     setRecentPeople((people.data as RecentPerson[]) ?? []);
     setRecentUploads((uploads.data as RecentUpload[]) ?? []);
