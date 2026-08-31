@@ -5,12 +5,23 @@
    - imagens/arquivos (storage, signed URLs): cache-first
    - busca por face (modelos de IA / pesos): NÃO é cacheada (exige internet) */
 
-const VERSION = "jtcqi-v4";
+const VERSION = "jtcqi-v5";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
 
-const SHELL_URLS = ["/", "/manifest.webmanifest", "/logo.png", "/favicon.ico"];
+const SHELL_URLS = [
+  "/",
+  "/dashboard",
+  "/investigados",
+  "/uploads",
+  "/pesquisa",
+  "/painel",
+  "/configuracoes",
+  "/manifest.webmanifest",
+  "/logo.png",
+  "/favicon.ico",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -44,7 +55,7 @@ const isSupabaseStorage = (url) => /\/storage\/v1\/object\//.test(url.pathname);
 
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const hit = await cache.match(request);
+  const hit = await cache.match(request, { ignoreVary: true });
   if (hit) {
     // revalida silenciosamente quando houver rede
     fetch(request)
@@ -64,7 +75,7 @@ async function networkFirst(request, cacheName) {
     if (res.ok) cache.put(request, res.clone()).catch(() => undefined);
     return res;
   } catch (err) {
-    const hit = await cache.match(request);
+    const hit = await cache.match(request, { ignoreVary: true });
     if (hit) return hit;
     throw err;
   }
@@ -121,8 +132,8 @@ self.addEventListener("fetch", (event) => {
           return res;
         } catch {
           return (
-            (await cache.match(request)) ||
-            (await cache.match("/")) ||
+            (await cache.match(request, { ignoreVary: true })) ||
+            (await cache.match("/", { ignoreVary: true })) ||
             new Response("Offline", { status: 503, statusText: "Offline" })
           );
         }
