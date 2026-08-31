@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { InvestigadoForm } from "@/components/InvestigadoForm";
 import { useRealtime } from "@/hooks/use-realtime";
+import { cq } from "@/lib/offline-cache";
 
 export const Route = createFileRoute("/investigados/")({ component: Page });
 
