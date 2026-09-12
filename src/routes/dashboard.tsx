@@ -10,7 +10,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { cq, cqCount } from "@/lib/offline-cache";
 import { useRealtime } from "@/hooks/use-realtime";
 
-export const Route = createFileRoute("/dashboard")({ component: Page });
+export const Route = createFileRoute("/dashboard")({
+  head: () => ({
+    meta: [
+      { title: "Dashboard | JTC Investigation" },
+      { name: "description", content: "Visão operacional de pessoas, arquivos, vínculos e buscas do JTC Investigation." },
+      { property: "og:title", content: "Dashboard | JTC Investigation" },
+      { property: "og:description", content: "Visão operacional de pessoas, arquivos, vínculos e buscas do JTC Investigation." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: Page,
+});
 
 type RecentPerson = {
   id: string;
@@ -139,11 +151,11 @@ function Page() {
 
   return (
     <AppShell title="Dashboard">
-      <div className="overflow-hidden rounded-xl border border-border bg-background/40 shadow-[0_0_50px_-12px_oklch(0.54_0.23_285/0.25)]">
+      <div className="overflow-hidden rounded-lg border border-border bg-background/40 shadow-[var(--shadow-float)]">
         {/* Hero — leitura principal */}
         <motion.section
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          className="relative border-b border-border bg-gradient-to-b from-card/40 to-transparent p-6 lg:p-8"
+          className="relative border-b border-border bg-card/30 p-6 lg:p-8"
         >
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
@@ -176,7 +188,7 @@ function Page() {
             <motion.div
               key={c.label}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
-              className="group bg-background p-5 transition-colors hover:bg-card"
+              className="group bg-background/80 p-5 transition-colors hover:bg-card"
             >
               <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
                 <c.icon className="h-3 w-3" />
@@ -199,13 +211,13 @@ function Page() {
                 <Link
                   key={q.to}
                   to={q.to}
-                  className="group flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-all hover:border-primary"
+                  className="group flex items-center justify-between rounded-md border border-border bg-card/70 p-4 transition-all hover:border-primary/70 hover:bg-card"
                 >
                   <span className="min-w-0">
                     <span className="block text-sm font-semibold truncate">{q.label}</span>
                     <span className="block text-[10px] uppercase tracking-wider text-muted-foreground">{q.desc}</span>
                   </span>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-secondary transition-colors group-hover:bg-primary">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-secondary text-primary transition-colors group-hover:border-primary/40 group-hover:bg-primary/10">
                     <q.icon size={15} />
                   </span>
                 </Link>

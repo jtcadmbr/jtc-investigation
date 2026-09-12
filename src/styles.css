@@ -292,7 +292,7 @@
   color: transparent;
 }
 .dark .gradient-text {
-  background: linear-gradient(110deg, oklch(0.74 0.19 290), oklch(0.90 0.12 198));
+  background-image: linear-gradient(110deg, oklch(0.74 0.19 290), oklch(0.90 0.12 198));
 }
 
 .aurora {
