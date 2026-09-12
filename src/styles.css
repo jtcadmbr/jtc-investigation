@@ -398,21 +398,23 @@
   0%, 100% { box-shadow: 0 0 10px oklch(0.55 0.15 245 / 0.2); }
   50% { box-shadow: 0 0 28px oklch(0.55 0.15 245 / 0.4); }
 }
-.dark @keyframes pulse-glow {
+@keyframes pulse-glow-dark {
   0%, 100% { box-shadow: 0 0 10px oklch(0.66 0.20 288 / 0.45); }
   50% { box-shadow: 0 0 28px oklch(0.66 0.20 288 / 0.85); }
 }
 .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.dark .pulse-glow { animation-name: pulse-glow-dark; }
 
 @keyframes pulse-glow-red {
   0%, 100% { box-shadow: 0 0 10px oklch(0.65 0.25 15 / 0.3); }
   50% { box-shadow: 0 0 28px oklch(0.65 0.25 15 / 0.6); }
 }
-.dark @keyframes pulse-glow-red {
+@keyframes pulse-glow-red-dark {
   0%, 100% { box-shadow: 0 0 10px oklch(0.62 0.24 25 / 0.45); }
   50% { box-shadow: 0 0 28px oklch(0.62 0.24 25 / 0.85); }
 }
 .pulse-glow-red { animation: pulse-glow-red 2s ease-in-out infinite; }
+.dark .pulse-glow-red { animation-name: pulse-glow-red-dark; }
 
 /* Hover lift para cards interativos */
 .hover-lift {
