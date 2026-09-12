@@ -251,7 +251,7 @@ function Page() {
           <p className="text-sm text-muted-foreground mb-4">
             Aplicativo desktop real (Electron) para Windows 10/11 x64. Roda em janela dedicada,
             sem barras de navegador, com o ícone oficial do sistema. Baixe, extraia o .zip e execute
-            <span className="font-mono"> JTC CDI.exe</span>.
+            <span className="font-mono"> JTC Investigacao.exe</span>.
           </p>
           <a
             href="/__l5e/assets-v1/afd090f4-1ec7-4f34-a3ec-f92d8ca6b18c/JTC_Investigacao_Desktop.zip"
@@ -273,7 +273,7 @@ function Page() {
         </button>
 
         <div className="text-xs text-muted-foreground text-center pt-4">
-          JTC CDI — Sistema fictício e organizacional.
+          JTC INVESTIGATION — Sistema fictício e organizacional.
         </div>
       </div>
     </AppShell>

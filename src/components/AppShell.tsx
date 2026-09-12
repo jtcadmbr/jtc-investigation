@@ -84,7 +84,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <div className="absolute -inset-px rounded-xl border border-primary/20" />
           </div>
           <div>
-            <div className="font-display font-bold tracking-tight text-lg gradient-text">JTC CDI</div>
+            <div className="font-display font-bold tracking-tight text-lg gradient-text">JTC INVESTIGATION</div>
             <div className="text-[10px] text-muted-foreground uppercase tracking-[0.25em]">Encrypted DB</div>
           </div>
         </Link>
@@ -192,7 +192,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               {open ? <X size={18} /> : <Menu size={18} />}
             </button>
             <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">JTC CDI · Console</div>
+              <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">JTC INVESTIGATION · Console</div>
               <h1 className="text-lg md:text-xl font-display font-semibold tracking-tight truncate">{title}</h1>
             </div>
           </div>
