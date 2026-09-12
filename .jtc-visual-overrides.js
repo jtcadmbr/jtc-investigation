@@ -1,29 +1,37 @@
 (function(){
     const items=[{"selector":"h1.text-4xl.font-display","device":"desktop","text":"JTC INVESTDDDDDDDDDD","styles":{}}];
     const device=()=>window.innerWidth<=767?'mobile':window.innerWidth<=1023?'tablet':'desktop';
-    const textOf=e=>('value' in e && /^(INPUT|TEXTAREA)$/.test(e.tagName))?e.value:(e.innerText??e.textContent??'');
     const apply=()=>{
       const current=device();
-      for(const i of items){try{
+      for(const i of items){
         if(i.device && i.device!==current) continue;
-        const e=document.querySelector(i.selector); if(!e) continue;
-        if(i.styles) for(const [k,v] of Object.entries(i.styles)) { if(e.style[k]!==String(v)) e.style[k]=v; }
-        if(i.text!==undefined){
-          const wanted=String(i.text);
-          if('value' in e && /^(INPUT|TEXTAREA)$/.test(e.tagName)) { if(e.value!==wanted) e.value=wanted; }
-          else if(!/^(SELECT)$/.test(e.tagName) && textOf(e)!==wanted) e.textContent=wanted;
-        }
-      }catch(_){} }
+        try{
+          const el=document.querySelector(i.selector);
+          if(!el) continue;
+          if(i.styles) for(const [k,v] of Object.entries(i.styles)){
+            if(v!==undefined && v!==null && el.style[k]!==String(v)) el.style.setProperty(k,String(v),'important');
+          }
+          if(i.text!==undefined){
+            const wanted=String(i.text);
+            if('value' in el && /^(INPUT|TEXTAREA)$/.test(el.tagName)){
+              if(el.value!==wanted) el.value=wanted;
+            } else if(!/^(SELECT|SCRIPT|STYLE)$/.test(el.tagName) && el.textContent!==wanted){
+              el.textContent=wanted;
+            }
+          }
+        }catch(_){ }
+      }
     };
+    let observerStarted=false;
     const boot=()=>{
       apply();
-      [50,150,400,900,1800,3500].forEach(ms=>setTimeout(apply,ms));
-      if(!window.__JTC_VISUAL_OBSERVER__){
-        let timer=0;
-        const observer=new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(apply,60);});
-        if(document.documentElement) observer.observe(document.documentElement,{subtree:true,childList:true});
-        window.__JTC_VISUAL_OBSERVER__=observer;
-      }
+      [0,50,150,300,600,1200,2500,5000].forEach(ms=>setTimeout(apply,ms));
+      if(observerStarted)return;
+      observerStarted=true;
+      let timer=0;
+      const observer=new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(apply,30);});
+      const start=()=>observer.observe(document.documentElement,{subtree:true,childList:true});
+      if(document.documentElement) start(); else document.addEventListener('DOMContentLoaded',start,{once:true});
       window.addEventListener('resize',apply,{passive:true});
     };
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true}); else boot();
