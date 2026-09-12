@@ -75,17 +75,16 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   }
 
   const SidebarContent = (
-    <div className="relative flex h-full flex-col bg-sidebar/80 backdrop-blur-xl border-r border-sidebar-border overflow-hidden">
-      <div className="absolute inset-0 aurora opacity-40" />
-      <div className="relative p-5 border-b border-sidebar-border">
+    <div className="relative flex h-full flex-col overflow-hidden border-r border-sidebar-border bg-sidebar">
+      <div className="relative px-5 py-6 border-b border-sidebar-border">
         <Link to="/dashboard" className="flex items-center gap-3">
-          <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-primary/30 to-accent/20 border border-primary/40 flex items-center justify-center pulse-glow">
-            <Shield className="h-5 w-5 text-primary" />
-            <div className="absolute -inset-px rounded-xl border border-primary/20" />
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/40 bg-primary/10">
+            <Shield className="h-5 w-5 text-primary" strokeWidth={1.7} />
+            <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-sidebar bg-accent" />
           </div>
-          <div>
-            <div className="font-display font-bold tracking-tight text-lg gradient-text">JTC INVESTIGATION</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-[0.25em]">Encrypted DB</div>
+          <div className="min-w-0">
+            <div className="font-display text-[15px] leading-tight text-sidebar-foreground">JTC <span className="text-primary">INVESTIGATION</span></div>
+            <div className="mt-1 text-[9px] text-muted-foreground uppercase tracking-[0.2em]">Intelligence system</div>
           </div>
         </Link>
       </div>
@@ -105,16 +104,16 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                     key={n.to}
                     to={n.to}
                     className={cn(
-                      "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
+                      "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-all",
                       active
-                        ? "bg-primary/15 text-primary shadow-[inset_0_0_0_1px_oklch(0.65_0.22_250/0.4)]"
+                        ? "bg-sidebar-accent text-sidebar-foreground shadow-[inset_0_0_0_1px_var(--sidebar-border)]"
                         : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60",
                     )}
                   >
                     {active && (
                       <motion.div
                         layoutId="activebar"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r bg-gradient-to-b from-primary to-accent glow"
+                        className="absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-r bg-primary"
                       />
                     )}
                     <Icon size={18} className={cn("shrink-0", active ? "text-primary" : "text-muted-foreground group-hover:text-primary transition")} />
@@ -134,8 +133,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       </nav>
 
       <div className="relative p-3 border-t border-sidebar-border space-y-2">
-        <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 px-3 py-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
+        <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-card/60 px-3 py-2">
+          <div className="h-8 w-8 rounded-md bg-primary/15 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm shrink-0">
             {(user.email ?? "?").charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
@@ -147,7 +146,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
         </div>
         <button
           onClick={() => signOut()}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOut size={16} />
           <span>Encerrar Sessão</span>
@@ -169,7 +168,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 bg-black/60 z-40 md:hidden"
+              className="fixed inset-0 bg-background/80 z-40 md:hidden"
             />
             <motion.aside
               initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
@@ -183,7 +182,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       </AnimatePresence>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border/60 bg-background/60 backdrop-blur-xl px-4 py-3">
+        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur-xl md:px-6">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setOpen((v) => !v)}
@@ -192,8 +191,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               {open ? <X size={18} /> : <Menu size={18} />}
             </button>
             <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">JTC INVESTIGATION · Console</div>
-              <h1 className="text-lg md:text-xl font-display font-semibold tracking-tight truncate">{title}</h1>
+              <div className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground">Central de inteligência</div>
+              <h1 className="truncate font-display text-lg md:text-xl">{title}</h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -219,7 +218,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             </div>
           </div>
         </header>
-        <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 md:p-6 lg:p-7">{children}</main>
       </div>
     </div>
   );
