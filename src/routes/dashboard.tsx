@@ -13,10 +13,10 @@ import { useRealtime } from "@/hooks/use-realtime";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard | JTC Investigation" },
-      { name: "description", content: "Visão operacional de pessoas, arquivos, vínculos e buscas do JTC Investigation." },
-      { property: "og:title", content: "Dashboard | JTC Investigation" },
-      { property: "og:description", content: "Visão operacional de pessoas, arquivos, vínculos e buscas do JTC Investigation." },
+      { title: "Dashboard | JTC CDI" },
+      { name: "description", content: "Visão operacional de pessoas, arquivos, vínculos e buscas do JTC CDI." },
+      { property: "og:title", content: "Dashboard | JTC CDI" },
+      { property: "og:description", content: "Visão operacional de pessoas, arquivos, vínculos e buscas do JTC CDI." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

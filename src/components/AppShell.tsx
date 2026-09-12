@@ -83,7 +83,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-sidebar bg-accent" />
           </div>
           <div className="min-w-0">
-            <div className="font-display text-[15px] leading-tight text-sidebar-foreground">JTC <span className="text-primary">INVESTIGATION</span></div>
+            <div className="font-display text-[15px] leading-tight text-sidebar-foreground">JTC <span className="text-primary">CDI</span></div>
             <div className="mt-1 text-[9px] text-muted-foreground uppercase tracking-[0.2em]">Intelligence system</div>
           </div>
         </Link>

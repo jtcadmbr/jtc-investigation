@@ -273,7 +273,7 @@ function Page() {
         </button>
 
         <div className="text-xs text-muted-foreground text-center pt-4">
-          JTC INVESTIGATION — Sistema fictício e organizacional.
+          JTC CDI — Sistema fictício e organizacional.
         </div>
       </div>
     </AppShell>
