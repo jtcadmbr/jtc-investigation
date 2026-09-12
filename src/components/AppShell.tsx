@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, Upload, Network, Search,
-  Settings, LogOut, Menu, X, Shield, ScanFace, Command, Bell, ChevronRight,
+  Settings, LogOut, Menu, X, Shield, ScanFace, Command, Bell, ChevronRight, Microscope,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ const navGroups = [
     label: "Operação",
     items: [
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, hint: "Visão geral" },
+      { to: "/investigacoes", label: "Investigações", icon: Microscope, hint: "Casos" },
       { to: "/investigados", label: "Pessoas", icon: Users, hint: "Cadastros" },
       { to: "/face-search", label: "Busca por Face", icon: ScanFace, hint: "Biometria" },
     ],
@@ -202,7 +203,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             >
               <Search size={13} />
               <span>Pesquisar…</span>
-              <span className="kbd flex items-center gap-1"><Command size={9} />K</span>
+              <span className="kbd flex items-center gap-1" data-jtc-id="jtc-71369290-cad4-4156-b4fd-06f28ab86d84"><Command size={9} /></span>
             </Link>
             <button
               type="button"

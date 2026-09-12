@@ -18,9 +18,11 @@ import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PainelIndexRouteImport } from './routes/painel.index'
 import { Route as InvestigadosIndexRouteImport } from './routes/investigados.index'
+import { Route as InvestigacoesIndexRouteImport } from './routes/investigacoes.index'
 import { Route as PainelIdRouteImport } from './routes/painel.$id'
 import { Route as PTokenRouteImport } from './routes/p.$token'
 import { Route as InvestigadosIdRouteImport } from './routes/investigados.$id'
+import { Route as InvestigacoesIdRouteImport } from './routes/investigacoes.$id'
 
 const UploadsRoute = UploadsRouteImport.update({
   id: '/uploads',
@@ -67,6 +69,11 @@ const InvestigadosIndexRoute = InvestigadosIndexRouteImport.update({
   path: '/investigados/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvestigacoesIndexRoute = InvestigacoesIndexRouteImport.update({
+  id: '/investigacoes/',
+  path: '/investigacoes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PainelIdRoute = PainelIdRouteImport.update({
   id: '/painel/$id',
   path: '/painel/$id',
@@ -82,6 +89,11 @@ const InvestigadosIdRoute = InvestigadosIdRouteImport.update({
   path: '/investigados/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvestigacoesIdRoute = InvestigacoesIdRouteImport.update({
+  id: '/investigacoes/$id',
+  path: '/investigacoes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -91,9 +103,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pesquisa': typeof PesquisaRoute
   '/uploads': typeof UploadsRoute
+  '/investigacoes/$id': typeof InvestigacoesIdRoute
   '/investigados/$id': typeof InvestigadosIdRoute
   '/p/$token': typeof PTokenRoute
   '/painel/$id': typeof PainelIdRoute
+  '/investigacoes/': typeof InvestigacoesIndexRoute
   '/investigados/': typeof InvestigadosIndexRoute
   '/painel/': typeof PainelIndexRoute
 }
@@ -105,9 +119,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pesquisa': typeof PesquisaRoute
   '/uploads': typeof UploadsRoute
+  '/investigacoes/$id': typeof InvestigacoesIdRoute
   '/investigados/$id': typeof InvestigadosIdRoute
   '/p/$token': typeof PTokenRoute
   '/painel/$id': typeof PainelIdRoute
+  '/investigacoes': typeof InvestigacoesIndexRoute
   '/investigados': typeof InvestigadosIndexRoute
   '/painel': typeof PainelIndexRoute
 }
@@ -120,9 +136,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pesquisa': typeof PesquisaRoute
   '/uploads': typeof UploadsRoute
+  '/investigacoes/$id': typeof InvestigacoesIdRoute
   '/investigados/$id': typeof InvestigadosIdRoute
   '/p/$token': typeof PTokenRoute
   '/painel/$id': typeof PainelIdRoute
+  '/investigacoes/': typeof InvestigacoesIndexRoute
   '/investigados/': typeof InvestigadosIndexRoute
   '/painel/': typeof PainelIndexRoute
 }
@@ -136,9 +154,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/pesquisa'
     | '/uploads'
+    | '/investigacoes/$id'
     | '/investigados/$id'
     | '/p/$token'
     | '/painel/$id'
+    | '/investigacoes/'
     | '/investigados/'
     | '/painel/'
   fileRoutesByTo: FileRoutesByTo
@@ -150,9 +170,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/pesquisa'
     | '/uploads'
+    | '/investigacoes/$id'
     | '/investigados/$id'
     | '/p/$token'
     | '/painel/$id'
+    | '/investigacoes'
     | '/investigados'
     | '/painel'
   id:
@@ -164,9 +186,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/pesquisa'
     | '/uploads'
+    | '/investigacoes/$id'
     | '/investigados/$id'
     | '/p/$token'
     | '/painel/$id'
+    | '/investigacoes/'
     | '/investigados/'
     | '/painel/'
   fileRoutesById: FileRoutesById
@@ -179,9 +203,11 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PesquisaRoute: typeof PesquisaRoute
   UploadsRoute: typeof UploadsRoute
+  InvestigacoesIdRoute: typeof InvestigacoesIdRoute
   InvestigadosIdRoute: typeof InvestigadosIdRoute
   PTokenRoute: typeof PTokenRoute
   PainelIdRoute: typeof PainelIdRoute
+  InvestigacoesIndexRoute: typeof InvestigacoesIndexRoute
   InvestigadosIndexRoute: typeof InvestigadosIndexRoute
   PainelIndexRoute: typeof PainelIndexRoute
 }
@@ -251,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvestigadosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/investigacoes/': {
+      id: '/investigacoes/'
+      path: '/investigacoes'
+      fullPath: '/investigacoes/'
+      preLoaderRoute: typeof InvestigacoesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/painel/$id': {
       id: '/painel/$id'
       path: '/painel/$id'
@@ -272,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvestigadosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/investigacoes/$id': {
+      id: '/investigacoes/$id'
+      path: '/investigacoes/$id'
+      fullPath: '/investigacoes/$id'
+      preLoaderRoute: typeof InvestigacoesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -283,9 +323,11 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PesquisaRoute: PesquisaRoute,
   UploadsRoute: UploadsRoute,
+  InvestigacoesIdRoute: InvestigacoesIdRoute,
   InvestigadosIdRoute: InvestigadosIdRoute,
   PTokenRoute: PTokenRoute,
   PainelIdRoute: PainelIdRoute,
+  InvestigacoesIndexRoute: InvestigacoesIndexRoute,
   InvestigadosIndexRoute: InvestigadosIndexRoute,
   PainelIndexRoute: PainelIndexRoute,
 }

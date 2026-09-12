@@ -68,7 +68,7 @@ if (typeof globalThis.localStorage === "undefined") {
 let serverEntryPromise;
 async function getServerEntry() {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("./server-AG46KXt2.mjs").then((n) => n.s).then(
+    serverEntryPromise = import("./server-j6R05tZn.mjs").then((n) => n.s).then(
       (m) => m.default ?? m
     );
   }

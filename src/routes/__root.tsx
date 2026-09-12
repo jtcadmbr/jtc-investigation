@@ -148,6 +148,7 @@ function useServiceWorker() {
 /** Rotas que devem estar disponíveis mesmo sem internet. */
 const OFFLINE_ROUTES = [
   "/dashboard",
+  "/investigacoes",
   "/investigados",
   "/uploads",
   "/pesquisa",

@@ -10479,5 +10479,6 @@ var server_edgeExports = requireServer_edge();
 const ReactDOMServer = /* @__PURE__ */ getDefaultExportFromCjs(server_edgeExports);
 export {
   ReactDOMServer as R,
-  ReactDOM as a
+  ReactDOM as a,
+  reactDomExports as r
 };
