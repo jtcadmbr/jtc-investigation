@@ -4,7 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace JTCInvestigationLauncher
+namespace JTCCDILauncher
 {
     static class Program
     {
@@ -35,7 +35,7 @@ namespace JTCInvestigationLauncher
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Não foi possível salvar o arquivo de configuração: " + ex.Message, "JTC Investigação", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Não foi possível salvar o arquivo de configuração: " + ex.Message, "JTC CDI", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
 
@@ -65,7 +65,7 @@ namespace JTCInvestigationLauncher
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Erro ao abrir o navegador padrão: " + ex.Message, "JTC Investigação", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Erro ao abrir o navegador padrão: " + ex.Message, "JTC CDI", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 return;
             }
@@ -76,7 +76,7 @@ namespace JTCInvestigationLauncher
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao iniciar o aplicativo: " + ex.Message, "JTC Investigação", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erro ao iniciar o aplicativo: " + ex.Message, "JTC CDI", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -87,7 +87,7 @@ namespace JTCInvestigationLauncher
                 Width = 460,
                 Height = 200,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
-                Text = "JTC Investigação - Configuração Inicial",
+                Text = "JTC CDI - Configuração Inicial",
                 StartPosition = FormStartPosition.CenterScreen,
                 MaximizeBox = false,
                 MinimizeBox = false,
@@ -101,7 +101,7 @@ namespace JTCInvestigationLauncher
                 Top = 15, 
                 Width = 400, 
                 Height = 40,
-                Text = "Digite a URL do sistema JTC Investigação:\n(Ex: https://seu-dominio.com ou http://localhost:3000)",
+                Text = "Digite a URL do sistema JTC CDI:\n(Ex: https://seu-dominio.com ou http://localhost:3000)",
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
             };
             
