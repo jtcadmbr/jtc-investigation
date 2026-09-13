@@ -65,7 +65,7 @@ function Page() {
   const [showLayouts, setShowLayouts] = useState(false);
   const [highlight, setHighlight] = useState("");
   const [applying, setApplying] = useState(false);
-  historyRef.current = historyRef.current || []; // Ensure historyRef.current is initialized
+  const historyRef = useRef<Node[][]>([]);
   const pushHistory = (snap: Node[]) => {
     historyRef.current.push(snap.map((n) => ({ ...n })));
     if (historyRef.current.length > 30) historyRef.current.shift();
