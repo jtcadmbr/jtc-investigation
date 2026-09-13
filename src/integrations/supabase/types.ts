@@ -41,6 +41,50 @@ export type Database = {
         }
         Relationships: []
       }
+      cameras_investigacao: {
+        Row: {
+          created_at: string
+          data: string | null
+          existe_gravacao: boolean
+          horario_aproximado: string | null
+          id: string
+          investigacao_id: string
+          local: string
+          observacoes: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: string | null
+          existe_gravacao?: boolean
+          horario_aproximado?: string | null
+          id?: string
+          investigacao_id: string
+          local: string
+          observacoes?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: string | null
+          existe_gravacao?: boolean
+          horario_aproximado?: string | null
+          id?: string
+          investigacao_id?: string
+          local?: string
+          observacoes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cameras_investigacao_investigacao_id_fkey"
+            columns: ["investigacao_id"]
+            isOneToOne: false
+            referencedRelation: "investigacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           board_id: string | null
@@ -95,6 +139,65 @@ export type Database = {
             columns: ["to_id"]
             isOneToOne: false
             referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidencias: {
+        Row: {
+          adicionado_por: string | null
+          created_at: string
+          data: string | null
+          descricao: string | null
+          id: string
+          investigacao_id: string
+          mime: string | null
+          nome: string
+          origem: string | null
+          status_verificacao: string
+          storage_path: string | null
+          tipo: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          adicionado_por?: string | null
+          created_at?: string
+          data?: string | null
+          descricao?: string | null
+          id?: string
+          investigacao_id: string
+          mime?: string | null
+          nome: string
+          origem?: string | null
+          status_verificacao?: string
+          storage_path?: string | null
+          tipo?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          adicionado_por?: string | null
+          created_at?: string
+          data?: string | null
+          descricao?: string | null
+          id?: string
+          investigacao_id?: string
+          mime?: string | null
+          nome?: string
+          origem?: string | null
+          status_verificacao?: string
+          storage_path?: string | null
+          tipo?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidencias_investigacao_id_fkey"
+            columns: ["investigacao_id"]
+            isOneToOne: false
+            referencedRelation: "investigacoes"
             referencedColumns: ["id"]
           },
         ]
@@ -207,6 +310,131 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      investigacao_historico: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          investigacao_id: string
+          tipo: string
+          user_id: string
+          usuario: string | null
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          investigacao_id: string
+          tipo?: string
+          user_id: string
+          usuario?: string | null
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          investigacao_id?: string
+          tipo?: string
+          user_id?: string
+          usuario?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investigacao_historico_investigacao_id_fkey"
+            columns: ["investigacao_id"]
+            isOneToOne: false
+            referencedRelation: "investigacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investigacao_pessoas: {
+        Row: {
+          created_at: string
+          id: string
+          investigacao_id: string
+          investigated_id: string
+          observacoes: string | null
+          tipo_relacao: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          investigacao_id: string
+          investigated_id: string
+          observacoes?: string | null
+          tipo_relacao?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          investigacao_id?: string
+          investigated_id?: string
+          observacoes?: string | null
+          tipo_relacao?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investigacao_pessoas_investigacao_id_fkey"
+            columns: ["investigacao_id"]
+            isOneToOne: false
+            referencedRelation: "investigacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investigacao_pessoas_investigated_id_fkey"
+            columns: ["investigated_id"]
+            isOneToOne: false
+            referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investigacoes: {
+        Row: {
+          created_at: string
+          data_abertura: string | null
+          descricao: string | null
+          id: string
+          numero: string
+          observacoes: string | null
+          prioridade: string
+          status: string
+          titulo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_abertura?: string | null
+          descricao?: string | null
+          id?: string
+          numero: string
+          observacoes?: string | null
+          prioridade?: string
+          status?: string
+          titulo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_abertura?: string | null
+          descricao?: string | null
+          id?: string
+          numero?: string
+          observacoes?: string | null
+          prioridade?: string
+          status?: string
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       investigateds: {
         Row: {
@@ -343,6 +571,44 @@ export type Database = {
         }
         Relationships: []
       }
+      notas_investigacao: {
+        Row: {
+          autor: string | null
+          created_at: string
+          id: string
+          investigacao_id: string
+          texto: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autor?: string | null
+          created_at?: string
+          id?: string
+          investigacao_id: string
+          texto: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autor?: string | null
+          created_at?: string
+          id?: string
+          investigacao_id?: string
+          texto?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_investigacao_investigacao_id_fkey"
+            columns: ["investigacao_id"]
+            isOneToOne: false
+            referencedRelation: "investigacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       panel_nodes: {
         Row: {
           board_id: string
@@ -384,6 +650,56 @@ export type Database = {
             columns: ["investigated_id"]
             isOneToOne: false
             referencedRelation: "investigateds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      relatos: {
+        Row: {
+          autor_fonte: string | null
+          created_at: string
+          data: string | null
+          hora: string | null
+          id: string
+          investigacao_id: string
+          observacoes: string | null
+          status_verificacao: string
+          texto: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          autor_fonte?: string | null
+          created_at?: string
+          data?: string | null
+          hora?: string | null
+          id?: string
+          investigacao_id: string
+          observacoes?: string | null
+          status_verificacao?: string
+          texto: string
+          tipo?: string
+          user_id: string
+        }
+        Update: {
+          autor_fonte?: string | null
+          created_at?: string
+          data?: string | null
+          hora?: string | null
+          id?: string
+          investigacao_id?: string
+          observacoes?: string | null
+          status_verificacao?: string
+          texto?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relatos_investigacao_id_fkey"
+            columns: ["investigacao_id"]
+            isOneToOne: false
+            referencedRelation: "investigacoes"
             referencedColumns: ["id"]
           },
         ]
@@ -470,6 +786,71 @@ export type Database = {
           user_name?: string
         }
         Relationships: []
+      }
+      testemunhas: {
+        Row: {
+          created_at: string
+          data_relato: string | null
+          estava_presente: boolean
+          id: string
+          idade: number | null
+          investigacao_id: string
+          local_estava: string | null
+          nome: string
+          o_que_lembra: string | null
+          o_que_nao_tem_certeza: string | null
+          observacoes: string | null
+          ouviu_pessoalmente: boolean
+          relato: string | null
+          updated_at: string
+          user_id: string
+          viu_pessoalmente: boolean
+        }
+        Insert: {
+          created_at?: string
+          data_relato?: string | null
+          estava_presente?: boolean
+          id?: string
+          idade?: number | null
+          investigacao_id: string
+          local_estava?: string | null
+          nome: string
+          o_que_lembra?: string | null
+          o_que_nao_tem_certeza?: string | null
+          observacoes?: string | null
+          ouviu_pessoalmente?: boolean
+          relato?: string | null
+          updated_at?: string
+          user_id: string
+          viu_pessoalmente?: boolean
+        }
+        Update: {
+          created_at?: string
+          data_relato?: string | null
+          estava_presente?: boolean
+          id?: string
+          idade?: number | null
+          investigacao_id?: string
+          local_estava?: string | null
+          nome?: string
+          o_que_lembra?: string | null
+          o_que_nao_tem_certeza?: string | null
+          observacoes?: string | null
+          ouviu_pessoalmente?: boolean
+          relato?: string | null
+          updated_at?: string
+          user_id?: string
+          viu_pessoalmente?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testemunhas_investigacao_id_fkey"
+            columns: ["investigacao_id"]
+            isOneToOne: false
+            referencedRelation: "investigacoes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       uploads: {
         Row: {
