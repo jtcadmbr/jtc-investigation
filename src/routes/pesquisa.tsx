@@ -5,6 +5,7 @@ import { Search, Filter, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { cq } from "@/lib/offline-cache";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/pesquisa")({ component: Page });
 

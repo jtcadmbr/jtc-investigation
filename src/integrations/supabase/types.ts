@@ -51,7 +51,6 @@ export type Database = {
           investigacao_id: string
           local: string
           observacoes: string | null
-          updated_at: string
           user_id: string
         }
         Insert: {
@@ -63,7 +62,6 @@ export type Database = {
           investigacao_id: string
           local: string
           observacoes?: string | null
-          updated_at?: string
           user_id: string
         }
         Update: {
@@ -75,7 +73,6 @@ export type Database = {
           investigacao_id?: string
           local?: string
           observacoes?: string | null
-          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -160,7 +157,6 @@ export type Database = {
           status_verificacao: string
           storage_path: string | null
           tipo: string
-          updated_at: string
           url: string | null
           user_id: string
         }
@@ -177,7 +173,6 @@ export type Database = {
           status_verificacao?: string
           storage_path?: string | null
           tipo?: string
-          updated_at?: string
           url?: string | null
           user_id: string
         }
@@ -194,7 +189,6 @@ export type Database = {
           status_verificacao?: string
           storage_path?: string | null
           tipo?: string
-          updated_at?: string
           url?: string | null
           user_id?: string
         }
@@ -320,30 +314,30 @@ export type Database = {
       investigacao_historico: {
         Row: {
           created_at: string
-          descricao: string
+          descricao: string | null
           id: string
           investigacao_id: string
           tipo: string
-          usuario: string | null
           user_id: string
+          usuario: string | null
         }
         Insert: {
           created_at?: string
-          descricao: string
+          descricao?: string | null
           id?: string
           investigacao_id: string
           tipo?: string
-          usuario?: string | null
           user_id: string
+          usuario?: string | null
         }
         Update: {
           created_at?: string
-          descricao?: string
+          descricao?: string | null
           id?: string
           investigacao_id?: string
           tipo?: string
-          usuario?: string | null
           user_id?: string
+          usuario?: string | null
         }
         Relationships: [
           {
@@ -672,7 +666,6 @@ export type Database = {
           status_verificacao: string
           texto: string
           tipo: string
-          updated_at: string
           user_id: string
         }
         Insert: {
@@ -686,7 +679,6 @@ export type Database = {
           status_verificacao?: string
           texto: string
           tipo?: string
-          updated_at?: string
           user_id: string
         }
         Update: {
@@ -700,7 +692,6 @@ export type Database = {
           status_verificacao?: string
           texto?: string
           tipo?: string
-          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -800,7 +791,7 @@ export type Database = {
         Row: {
           created_at: string
           data_relato: string | null
-          estava_presente: boolean | null
+          estava_presente: boolean
           id: string
           idade: number | null
           investigacao_id: string
@@ -809,16 +800,16 @@ export type Database = {
           o_que_lembra: string | null
           o_que_nao_tem_certeza: string | null
           observacoes: string | null
-          ouviu_pessoalmente: boolean | null
+          ouviu_pessoalmente: boolean
           relato: string | null
           updated_at: string
           user_id: string
-          viu_pessoalmente: boolean | null
+          viu_pessoalmente: boolean
         }
         Insert: {
           created_at?: string
           data_relato?: string | null
-          estava_presente?: boolean | null
+          estava_presente?: boolean
           id?: string
           idade?: number | null
           investigacao_id: string
@@ -827,16 +818,16 @@ export type Database = {
           o_que_lembra?: string | null
           o_que_nao_tem_certeza?: string | null
           observacoes?: string | null
-          ouviu_pessoalmente?: boolean | null
+          ouviu_pessoalmente?: boolean
           relato?: string | null
           updated_at?: string
           user_id: string
-          viu_pessoalmente?: boolean | null
+          viu_pessoalmente?: boolean
         }
         Update: {
           created_at?: string
           data_relato?: string | null
-          estava_presente?: boolean | null
+          estava_presente?: boolean
           id?: string
           idade?: number | null
           investigacao_id?: string
@@ -845,11 +836,11 @@ export type Database = {
           o_que_lembra?: string | null
           o_que_nao_tem_certeza?: string | null
           observacoes?: string | null
-          ouviu_pessoalmente?: boolean | null
+          ouviu_pessoalmente?: boolean
           relato?: string | null
           updated_at?: string
           user_id?: string
-          viu_pessoalmente?: boolean | null
+          viu_pessoalmente?: boolean
         }
         Relationships: [
           {
