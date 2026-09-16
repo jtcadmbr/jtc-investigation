@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { Save, Trash2, Video, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ModalShell } from "./ModalShell";
-import { logHistorico } from "@/lib/investigacoes";
+import { logHistorico, uploadArquivo } from "@/lib/investigacoes";
 import { formatDateBR, brToISO, isoToBR } from "@/lib/format";
+
+/** Vídeo anexado a um registro de câmera (armazenado em `cameras_investigacao.videos`). */
+type CameraVideo = {
+  nome: string;
+  url: string;
+  storage_path: string;
+  mime: string;
+};
 
 const baseCls =
   "mt-1 w-full bg-input border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none";
@@ -26,13 +34,50 @@ export function CameraForm({
   const [form, setForm] = useState<any>({ existe_gravacao: false });
   const [dataBR, setDataBR] = useState("");
   const [saving, setSaving] = useState(false);
+  const [videos, setVideos] = useState<CameraVideo[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     setForm(initial ?? { existe_gravacao: false });
     setDataBR(initial?.data ? isoToBR(initial.data) : "");
+    setVideos(Array.isArray(initial?.videos) ? (initial.videos as CameraVideo[]) : []);
   }, [initial]);
 
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
+
+  /** Envia um ou mais vídeos ao storage e adiciona à lista local. */
+  const addVideos = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    const added: CameraVideo[] = [];
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("video/")) {
+        toast.error(`"${file.name}" não é um vídeo`);
+        continue;
+      }
+      const up = await uploadArquivo(user, file);
+      if (!up) {
+        toast.error(`Falha ao enviar "${file.name}"`);
+        continue;
+      }
+      added.push({ nome: file.name, url: up.url, storage_path: up.storage_path, mime: up.mime });
+    }
+    setUploading(false);
+    if (added.length) {
+      setVideos((v) => [...v, ...added]);
+      set("existe_gravacao", true);
+      toast.success(`${added.length} vídeo(s) anexado(s)`);
+    }
+  };
+
+  const pickVideos = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "video/*";
+    input.multiple = true;
+    input.onchange = () => addVideos(input.files);
+    input.click();
+  };
 
   const submit = async () => {
     if (!form.local?.trim()) return toast.error("Local da câmera é obrigatório");
@@ -45,6 +90,7 @@ export function CameraForm({
       horario_aproximado: form.horario_aproximado?.trim() || null,
       data: brToISO(dataBR),
       existe_gravacao: !!form.existe_gravacao,
+      videos,
       user_id: user.id,
       investigacao_id: investigacaoId,
     };
@@ -152,6 +198,48 @@ export function CameraForm({
             placeholder="Ângulo, identificação da câmera, quem solicitou as imagens..."
             className={`${baseCls} resize-y`}
           />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] text-muted-foreground">
+              Vídeos da câmera {videos.length > 0 && `(${videos.length})`}
+            </label>
+            <button
+              type="button"
+              onClick={pickVideos}
+              disabled={uploading}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/40 text-primary text-xs font-medium hover:bg-primary/10 transition disabled:opacity-60"
+            >
+              <Upload size={14} /> {uploading ? "Enviando..." : "Anexar vídeo"}
+            </button>
+          </div>
+
+          {videos.length === 0 ? (
+            <p className="mt-2 text-xs text-muted-foreground border border-dashed border-border rounded-lg p-3">
+              Nenhum vídeo anexado. Envie as imagens obtidas desta câmera.
+            </p>
+          ) : (
+            <div className="mt-2 space-y-2">
+              {videos.map((v, i) => (
+                <div key={v.storage_path} className="rounded-lg border border-border p-2">
+                  <div className="flex items-center gap-2">
+                    <Video size={14} className="text-primary shrink-0" />
+                    <span className="flex-1 min-w-0 truncate text-xs">{v.nome}</span>
+                    <button
+                      type="button"
+                      onClick={() => setVideos((list) => list.filter((_, idx) => idx !== i))}
+                      className="h-7 w-7 rounded-md border border-border text-destructive flex items-center justify-center hover:bg-destructive/10 transition"
+                      aria-label={`Remover ${v.nome}`}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                  <video src={v.url} controls preload="metadata" className="mt-2 w-full rounded-md bg-black" />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </ModalShell>

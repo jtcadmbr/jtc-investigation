@@ -95,6 +95,24 @@ export function TabCameras({
                 )}
               </div>
 
+              {Array.isArray(c.videos) && c.videos.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {c.videos.length} vídeo(s)
+                  </p>
+                  {c.videos.map((v: any) => (
+                    <video
+                      key={v.storage_path ?? v.url}
+                      src={v.url}
+                      controls
+                      preload="metadata"
+                      className="w-full rounded-lg bg-black"
+                    />
+                  ))}
+                </div>
+              )}
+
+
               <div className="mt-3 flex justify-end gap-2">
                 <button
                   onClick={() => {

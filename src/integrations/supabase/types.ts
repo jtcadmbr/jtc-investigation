@@ -52,6 +52,7 @@ export type Database = {
           local: string
           observacoes: string | null
           user_id: string
+          videos: Json
         }
         Insert: {
           created_at?: string
@@ -63,6 +64,7 @@ export type Database = {
           local: string
           observacoes?: string | null
           user_id: string
+          videos?: Json
         }
         Update: {
           created_at?: string
@@ -74,6 +76,7 @@ export type Database = {
           local?: string
           observacoes?: string | null
           user_id?: string
+          videos?: Json
         }
         Relationships: [
           {
