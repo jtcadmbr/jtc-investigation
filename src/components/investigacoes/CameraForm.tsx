@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { Save, Trash2, Video, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ModalShell } from "./ModalShell";
-import { logHistorico } from "@/lib/investigacoes";
+import { logHistorico, uploadArquivo } from "@/lib/investigacoes";
 import { formatDateBR, brToISO, isoToBR } from "@/lib/format";
+
+/** Vídeo anexado a um registro de câmera (armazenado em `cameras_investigacao.videos`). */
+type CameraVideo = {
+  nome: string;
+  url: string;
+  storage_path: string;
+  mime: string;
+};
 
 const baseCls =
   "mt-1 w-full bg-input border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none";
