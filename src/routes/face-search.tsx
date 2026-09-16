@@ -159,6 +159,43 @@ function Page() {
     r.readAsDataURL(f);
   };
 
+  // Arrastar-e-soltar e colar (Ctrl+V) uma imagem direto na área de análise
+  const [dragOver, setDragOver] = useState(false);
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = Array.from(e.dataTransfer.files ?? []).find((f) => f.type.startsWith("image/"));
+    if (file) return onFile(file);
+    const item = Array.from(e.dataTransfer.items ?? []).find((i) => i.type.startsWith("image/"));
+    if (item) {
+      const f = item.getAsFile();
+      if (f) return onFile(f);
+    }
+    toast.error("Arraste um arquivo de imagem");
+  };
+
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const it of Array.from(items)) {
+        if (it.kind === "file" && it.type.startsWith("image/")) {
+          const f = it.getAsFile();
+          if (f) {
+            e.preventDefault();
+            onFile(f);
+            toast.success("Imagem colada da área de transferência");
+          }
+          return;
+        }
+      }
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function ensurePhotoIndexed(personId: string, url: string): Promise<EmbeddingRow[]> {
     if (!user) return [];
     const { data: existing } = await supabase
@@ -746,10 +783,29 @@ function Page() {
               ) : (
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="w-full aspect-video rounded-xl border-2 border-dashed border-primary/40 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:text-primary transition bg-primary/5"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={onDrop}
+                  className={`w-full aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition ${
+                    dragOver
+                      ? "border-primary text-primary bg-primary/15 scale-[1.01]"
+                      : "border-primary/40 text-muted-foreground hover:border-primary hover:text-primary bg-primary/5"
+                  }`}
                 >
                   <Upload size={28} />
-                  <span className="text-xs">Enviar foto para análise</span>
+                  <span className="text-xs font-semibold">
+                    {dragOver ? "Solte a imagem aqui" : "Arraste uma imagem, cole com Ctrl+V ou clique para enviar"}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Aceita arquivos de imagem e imagens copiadas de outra página
+                  </span>
                 </button>
               )}
               <input
