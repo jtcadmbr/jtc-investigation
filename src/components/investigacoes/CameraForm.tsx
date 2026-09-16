@@ -34,13 +34,50 @@ export function CameraForm({
   const [form, setForm] = useState<any>({ existe_gravacao: false });
   const [dataBR, setDataBR] = useState("");
   const [saving, setSaving] = useState(false);
+  const [videos, setVideos] = useState<CameraVideo[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     setForm(initial ?? { existe_gravacao: false });
     setDataBR(initial?.data ? isoToBR(initial.data) : "");
+    setVideos(Array.isArray(initial?.videos) ? (initial.videos as CameraVideo[]) : []);
   }, [initial]);
 
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
+
+  /** Envia um ou mais vídeos ao storage e adiciona à lista local. */
+  const addVideos = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    const added: CameraVideo[] = [];
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("video/")) {
+        toast.error(`"${file.name}" não é um vídeo`);
+        continue;
+      }
+      const up = await uploadArquivo(user, file);
+      if (!up) {
+        toast.error(`Falha ao enviar "${file.name}"`);
+        continue;
+      }
+      added.push({ nome: file.name, url: up.url, storage_path: up.storage_path, mime: up.mime });
+    }
+    setUploading(false);
+    if (added.length) {
+      setVideos((v) => [...v, ...added]);
+      set("existe_gravacao", true);
+      toast.success(`${added.length} vídeo(s) anexado(s)`);
+    }
+  };
+
+  const pickVideos = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "video/*";
+    input.multiple = true;
+    input.onchange = () => addVideos(input.files);
+    input.click();
+  };
 
   const submit = async () => {
     if (!form.local?.trim()) return toast.error("Local da câmera é obrigatório");
@@ -53,6 +90,7 @@ export function CameraForm({
       horario_aproximado: form.horario_aproximado?.trim() || null,
       data: brToISO(dataBR),
       existe_gravacao: !!form.existe_gravacao,
+      videos,
       user_id: user.id,
       investigacao_id: investigacaoId,
     };
