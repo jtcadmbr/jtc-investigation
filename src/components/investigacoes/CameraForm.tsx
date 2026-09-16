@@ -199,6 +199,48 @@ export function CameraForm({
             className={`${baseCls} resize-y`}
           />
         </div>
+
+        <div>
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] text-muted-foreground">
+              Vídeos da câmera {videos.length > 0 && `(${videos.length})`}
+            </label>
+            <button
+              type="button"
+              onClick={pickVideos}
+              disabled={uploading}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/40 text-primary text-xs font-medium hover:bg-primary/10 transition disabled:opacity-60"
+            >
+              <Upload size={14} /> {uploading ? "Enviando..." : "Anexar vídeo"}
+            </button>
+          </div>
+
+          {videos.length === 0 ? (
+            <p className="mt-2 text-xs text-muted-foreground border border-dashed border-border rounded-lg p-3">
+              Nenhum vídeo anexado. Envie as imagens obtidas desta câmera.
+            </p>
+          ) : (
+            <div className="mt-2 space-y-2">
+              {videos.map((v, i) => (
+                <div key={v.storage_path} className="rounded-lg border border-border p-2">
+                  <div className="flex items-center gap-2">
+                    <Video size={14} className="text-primary shrink-0" />
+                    <span className="flex-1 min-w-0 truncate text-xs">{v.nome}</span>
+                    <button
+                      type="button"
+                      onClick={() => setVideos((list) => list.filter((_, idx) => idx !== i))}
+                      className="h-7 w-7 rounded-md border border-border text-destructive flex items-center justify-center hover:bg-destructive/10 transition"
+                      aria-label={`Remover ${v.nome}`}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                  <video src={v.url} controls preload="metadata" className="mt-2 w-full rounded-md bg-black" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </ModalShell>
   );
