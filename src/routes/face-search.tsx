@@ -746,10 +746,29 @@ function Page() {
               ) : (
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="w-full aspect-video rounded-xl border-2 border-dashed border-primary/40 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:text-primary transition bg-primary/5"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={onDrop}
+                  className={`w-full aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition ${
+                    dragOver
+                      ? "border-primary text-primary bg-primary/15 scale-[1.01]"
+                      : "border-primary/40 text-muted-foreground hover:border-primary hover:text-primary bg-primary/5"
+                  }`}
                 >
                   <Upload size={28} />
-                  <span className="text-xs">Enviar foto para análise</span>
+                  <span className="text-xs font-semibold">
+                    {dragOver ? "Solte a imagem aqui" : "Arraste uma imagem, cole com Ctrl+V ou clique para enviar"}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Aceita arquivos de imagem e imagens copiadas de outra página
+                  </span>
                 </button>
               )}
               <input
