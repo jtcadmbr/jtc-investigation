@@ -1,5 +1,5 @@
 (function(){
-    const items=[{"selector":"h1.text-4xl.font-display","device":"desktop","text":"JTC INVESTDDDDDDDDDD","styles":{}}];
+    const items=[{"selector":"h1.text-4xl.font-display","device":"desktop","text":"JTC INVESTDDDDDDDDDD","styles":{}},{"selector":"span","device":"desktop","text":"SISTEMA RESTRITO • USO ORGANIZACIONAL•JTC","styles":{}}];
     const device=()=>window.innerWidth<=767?'mobile':window.innerWidth<=1023?'tablet':'desktop';
     const apply=()=>{
       const current=device();

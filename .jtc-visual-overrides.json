@@ -4,5 +4,11 @@
     "device": "desktop",
     "text": "JTC INVESTDDDDDDDDDD",
     "styles": {}
+  },
+  {
+    "selector": "span",
+    "device": "desktop",
+    "text": "SISTEMA RESTRITO • USO ORGANIZACIONAL•JTC",
+    "styles": {}
   }
 ]
