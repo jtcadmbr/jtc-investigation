@@ -794,7 +794,7 @@ export type Database = {
         Row: {
           created_at: string
           data_relato: string | null
-          estava_presente: boolean
+          estava_presente: boolean | null
           foto_storage_path: string | null
           foto_url: string | null
           id: string
@@ -805,18 +805,18 @@ export type Database = {
           o_que_lembra: string | null
           o_que_nao_tem_certeza: string | null
           observacoes: string | null
-          ouviu_pessoalmente: boolean
+          ouviu_pessoalmente: boolean | null
           relato: string | null
           updated_at: string
           user_id: string
           video_storage_path: string | null
           video_url: string | null
-          viu_pessoalmente: boolean
+          viu_pessoalmente: boolean | null
         }
         Insert: {
           created_at?: string
           data_relato?: string | null
-          estava_presente?: boolean
+          estava_presente?: boolean | null
           foto_storage_path?: string | null
           foto_url?: string | null
           id?: string
@@ -827,18 +827,18 @@ export type Database = {
           o_que_lembra?: string | null
           o_que_nao_tem_certeza?: string | null
           observacoes?: string | null
-          ouviu_pessoalmente?: boolean
+          ouviu_pessoalmente?: boolean | null
           relato?: string | null
           updated_at?: string
           user_id: string
           video_storage_path?: string | null
           video_url?: string | null
-          viu_pessoalmente?: boolean
+          viu_pessoalmente?: boolean | null
         }
         Update: {
           created_at?: string
           data_relato?: string | null
-          estava_presente?: boolean
+          estava_presente?: boolean | null
           foto_storage_path?: string | null
           foto_url?: string | null
           id?: string
@@ -849,13 +849,13 @@ export type Database = {
           o_que_lembra?: string | null
           o_que_nao_tem_certeza?: string | null
           observacoes?: string | null
-          ouviu_pessoalmente?: boolean
+          ouviu_pessoalmente?: boolean | null
           relato?: string | null
           updated_at?: string
           user_id?: string
           video_storage_path?: string | null
           video_url?: string | null
-          viu_pessoalmente?: boolean
+          viu_pessoalmente?: boolean | null
         }
         Relationships: [
           {
