@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "gecko_banco": {
+      "type": "remote",
+      "url": "http://127.0.0.1:51330/mcp?key=nlLVluedL1b4JxzH8CYXH0cbG3-OJ-XTuxZhsGgPN4o&p=3bbd9c0a9e7ac7d6",
+      "enabled": true,
+      "oauth": false,
+      "timeout": 600000
+    }
+  },
+  "permission": {
+    "gecko_banco_*": "allow"
+  }
+}

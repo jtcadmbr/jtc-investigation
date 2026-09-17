@@ -9,44 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UploadsRouteImport } from './routes/uploads'
-import { Route as PesquisaRouteImport } from './routes/pesquisa'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as FaceSearchRouteImport } from './routes/face-search'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PainelIndexRouteImport } from './routes/painel.index'
-import { Route as InvestigadosIndexRouteImport } from './routes/investigados.index'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as FaceSearchRouteImport } from './routes/face-search'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PesquisaRouteImport } from './routes/pesquisa'
+import { Route as UploadsRouteImport } from './routes/uploads'
 import { Route as InvestigacoesIndexRouteImport } from './routes/investigacoes.index'
-import { Route as PainelIdRouteImport } from './routes/painel.$id'
-import { Route as PTokenRouteImport } from './routes/p.$token'
-import { Route as InvestigadosIdRouteImport } from './routes/investigados.$id'
 import { Route as InvestigacoesIdRouteImport } from './routes/investigacoes.$id'
+import { Route as InvestigadosIndexRouteImport } from './routes/investigados.index'
+import { Route as InvestigadosIdRouteImport } from './routes/investigados.$id'
+import { Route as PTokenRouteImport } from './routes/p.$token'
+import { Route as PainelIndexRouteImport } from './routes/painel.index'
+import { Route as PainelIdRouteImport } from './routes/painel.$id'
 
-const UploadsRoute = UploadsRouteImport.update({
-  id: '/uploads',
-  path: '/uploads',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PesquisaRoute = PesquisaRouteImport.update({
-  id: '/pesquisa',
-  path: '/pesquisa',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FaceSearchRoute = FaceSearchRouteImport.update({
-  id: '/face-search',
-  path: '/face-search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
@@ -54,19 +34,29 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PainelIndexRoute = PainelIndexRouteImport.update({
-  id: '/painel/',
-  path: '/painel/',
+const FaceSearchRoute = FaceSearchRouteImport.update({
+  id: '/face-search',
+  path: '/face-search',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InvestigadosIndexRoute = InvestigadosIndexRouteImport.update({
-  id: '/investigados/',
-  path: '/investigados/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PesquisaRoute = PesquisaRouteImport.update({
+  id: '/pesquisa',
+  path: '/pesquisa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UploadsRoute = UploadsRouteImport.update({
+  id: '/uploads',
+  path: '/uploads',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvestigacoesIndexRoute = InvestigacoesIndexRouteImport.update({
@@ -74,14 +64,14 @@ const InvestigacoesIndexRoute = InvestigacoesIndexRouteImport.update({
   path: '/investigacoes/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PainelIdRoute = PainelIdRouteImport.update({
-  id: '/painel/$id',
-  path: '/painel/$id',
+const InvestigacoesIdRoute = InvestigacoesIdRouteImport.update({
+  id: '/investigacoes/$id',
+  path: '/investigacoes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PTokenRoute = PTokenRouteImport.update({
-  id: '/p/$token',
-  path: '/p/$token',
+const InvestigadosIndexRoute = InvestigadosIndexRouteImport.update({
+  id: '/investigados/',
+  path: '/investigados/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvestigadosIdRoute = InvestigadosIdRouteImport.update({
@@ -89,9 +79,19 @@ const InvestigadosIdRoute = InvestigadosIdRouteImport.update({
   path: '/investigados/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InvestigacoesIdRoute = InvestigacoesIdRouteImport.update({
-  id: '/investigacoes/$id',
-  path: '/investigacoes/$id',
+const PTokenRoute = PTokenRouteImport.update({
+  id: '/p/$token',
+  path: '/p/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelIndexRoute = PainelIndexRouteImport.update({
+  id: '/painel/',
+  path: '/painel/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelIdRoute = PainelIdRouteImport.update({
+  id: '/painel/$id',
+  path: '/painel/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -214,39 +214,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/uploads': {
-      id: '/uploads'
-      path: '/uploads'
-      fullPath: '/uploads'
-      preLoaderRoute: typeof UploadsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pesquisa': {
-      id: '/pesquisa'
-      path: '/pesquisa'
-      fullPath: '/pesquisa'
-      preLoaderRoute: typeof PesquisaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/face-search': {
-      id: '/face-search'
-      path: '/face-search'
-      fullPath: '/face-search'
-      preLoaderRoute: typeof FaceSearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/configuracoes': {
@@ -256,25 +228,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/painel/': {
-      id: '/painel/'
-      path: '/painel'
-      fullPath: '/painel/'
-      preLoaderRoute: typeof PainelIndexRouteImport
+    '/face-search': {
+      id: '/face-search'
+      path: '/face-search'
+      fullPath: '/face-search'
+      preLoaderRoute: typeof FaceSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/investigados/': {
-      id: '/investigados/'
-      path: '/investigados'
-      fullPath: '/investigados/'
-      preLoaderRoute: typeof InvestigadosIndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pesquisa': {
+      id: '/pesquisa'
+      path: '/pesquisa'
+      fullPath: '/pesquisa'
+      preLoaderRoute: typeof PesquisaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/uploads': {
+      id: '/uploads'
+      path: '/uploads'
+      fullPath: '/uploads'
+      preLoaderRoute: typeof UploadsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/investigacoes/': {
@@ -284,18 +270,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvestigacoesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/painel/$id': {
-      id: '/painel/$id'
-      path: '/painel/$id'
-      fullPath: '/painel/$id'
-      preLoaderRoute: typeof PainelIdRouteImport
+    '/investigacoes/$id': {
+      id: '/investigacoes/$id'
+      path: '/investigacoes/$id'
+      fullPath: '/investigacoes/$id'
+      preLoaderRoute: typeof InvestigacoesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/p/$token': {
-      id: '/p/$token'
-      path: '/p/$token'
-      fullPath: '/p/$token'
-      preLoaderRoute: typeof PTokenRouteImport
+    '/investigados/': {
+      id: '/investigados/'
+      path: '/investigados'
+      fullPath: '/investigados/'
+      preLoaderRoute: typeof InvestigadosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/investigados/$id': {
@@ -305,11 +291,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvestigadosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/investigacoes/$id': {
-      id: '/investigacoes/$id'
-      path: '/investigacoes/$id'
-      fullPath: '/investigacoes/$id'
-      preLoaderRoute: typeof InvestigacoesIdRouteImport
+    '/p/$token': {
+      id: '/p/$token'
+      path: '/p/$token'
+      fullPath: '/p/$token'
+      preLoaderRoute: typeof PTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel/': {
+      id: '/painel/'
+      path: '/painel'
+      fullPath: '/painel/'
+      preLoaderRoute: typeof PainelIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel/$id': {
+      id: '/painel/$id'
+      path: '/painel/$id'
+      fullPath: '/painel/$id'
+      preLoaderRoute: typeof PainelIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
