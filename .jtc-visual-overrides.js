@@ -1,5 +1,5 @@
 (function(){
-    const items=[{"selector":"h1.text-4xl.font-display","device":"desktop","text":"JTC INVESTDDDDDDDDDD","styles":{}},{"selector":"span","device":"desktop","text":"SISTEMA RESTRITO • USO ORGANIZACIONAL•JTC","styles":{}}];
+    const items=[{"selector":"h1.text-4xl.font-display","device":"desktop","text":"JTC INVESTDDDDDDDDDD","styles":{}},{"selector":"span","device":"desktop","text":"SISTEMA RESTRITO • USO ORGANIZACIONAL•JTC","styles":{}},{"selector":"div.absolute.-inset-2","device":"desktop","text":"","styles":{}},{"selector":"div.absolute.-top-3:nth-of-type(1)","device":"desktop","text":"ACESSO RESTRITO JTC","styles":{}}];
     const device=()=>window.innerWidth<=767?'mobile':window.innerWidth<=1023?'tablet':'desktop';
     const apply=()=>{
       const current=device();

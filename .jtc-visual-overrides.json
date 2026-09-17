@@ -10,5 +10,17 @@
     "device": "desktop",
     "text": "SISTEMA RESTRITO • USO ORGANIZACIONAL•JTC",
     "styles": {}
+  },
+  {
+    "selector": "div.absolute.-inset-2",
+    "device": "desktop",
+    "text": "",
+    "styles": {}
+  },
+  {
+    "selector": "div.absolute.-top-3:nth-of-type(1)",
+    "device": "desktop",
+    "text": "ACESSO RESTRITO JTC",
+    "styles": {}
   }
 ]
