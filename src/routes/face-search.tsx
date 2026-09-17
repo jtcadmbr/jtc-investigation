@@ -12,6 +12,7 @@ import {
   getFaceCandidates,
   loadFaceModels,
   MODEL_VERSION,
+  FACE_MODEL_LABEL,
   similarity,
   toArray,
   type FaceCandidate,
