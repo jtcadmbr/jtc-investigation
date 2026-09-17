@@ -3,8 +3,27 @@ import { Human, type Config, type FaceResult } from "@vladmandic/human";
 // Human hospeda os modelos aqui (CDN estável do autor)
 const MODEL_URL = "https://vladmandic.github.io/human-models/models/";
 
+// Seleção adaptativa de modelo:
+// - Desktop (tela larga + CPU razoável): InsightFace ResNet-50 ("faceres", 512-d).
+//   É a arquitetura usada em sistemas profissionais de reconhecimento facial
+//   (~99.6% LFW) — o modelo mais preciso que roda no navegador.
+// - Mobile: MobileFaceNet (1024-d) — leve e rápido.
+// Os embeddings ficam isolados por MODEL_VERSION no banco, então os dois
+// modelos convivem sem contaminação e o reindex automático cobre a troca.
+export const IS_DESKTOP =
+  typeof window !== "undefined" &&
+  window.matchMedia("(min-width: 1024px)").matches &&
+  (navigator.hardwareConcurrency ?? 4) >= 4;
+
+const DESCRIPTION_MODEL = IS_DESKTOP ? "faceres.json" : "mobilefacenet.json";
+export const FACE_MODEL_LABEL = IS_DESKTOP
+  ? "InsightFace ResNet-50 · alta precisão"
+  : "MobileFaceNet · leve";
+
 // bump this when the pipeline changes so cached vectors get re-indexed
-export const MODEL_VERSION = "human-3-mobilefacenet-1024-v1";
+export const MODEL_VERSION = IS_DESKTOP
+  ? "human-4-insightface-resnet50-512-v1"
+  : "human-3-mobilefacenet-1024-v1";
 
 export type FaceMetrics = {
   symmetry: number;
