@@ -12,6 +12,7 @@ import {
   getFaceCandidates,
   loadFaceModels,
   MODEL_VERSION,
+  FACE_MODEL_LABEL,
   similarity,
   toArray,
   type FaceCandidate,
@@ -751,7 +752,14 @@ function Page() {
           {loadingModels && (
             <div className="text-xs text-muted-foreground flex items-center gap-2 mb-3 bg-primary/5 p-3 rounded-lg border border-primary/10">
               <div className="h-3 w-3 rounded-full border border-primary border-t-transparent animate-spin" />
-              Carregando rede neural estendida + estimadores de gênero/idade (~13MB)...
+              Carregando rede neural ({FACE_MODEL_LABEL}) + estimadores de gênero/idade...
+            </div>
+          )}
+
+          {modelsReady && (
+            <div className="text-[11px] text-muted-foreground flex items-center gap-2 mb-3 bg-emerald-500/5 p-2 px-3 rounded-lg border border-emerald-500/15 w-fit">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Modelo ativo: <span className="font-medium text-foreground">{FACE_MODEL_LABEL}</span>
             </div>
           )}
 

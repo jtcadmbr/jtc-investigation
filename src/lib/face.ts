@@ -3,8 +3,27 @@ import { Human, type Config, type FaceResult } from "@vladmandic/human";
 // Human hospeda os modelos aqui (CDN estável do autor)
 const MODEL_URL = "https://vladmandic.github.io/human-models/models/";
 
+// Seleção adaptativa de modelo:
+// - Desktop (tela larga + CPU razoável): InsightFace ResNet-50 ("faceres", 512-d).
+//   É a arquitetura usada em sistemas profissionais de reconhecimento facial
+//   (~99.6% LFW) — o modelo mais preciso que roda no navegador.
+// - Mobile: MobileFaceNet (1024-d) — leve e rápido.
+// Os embeddings ficam isolados por MODEL_VERSION no banco, então os dois
+// modelos convivem sem contaminação e o reindex automático cobre a troca.
+export const IS_DESKTOP =
+  typeof window !== "undefined" &&
+  window.matchMedia("(min-width: 1024px)").matches &&
+  (navigator.hardwareConcurrency ?? 4) >= 4;
+
+const DESCRIPTION_MODEL = IS_DESKTOP ? "faceres.json" : "mobilefacenet.json";
+export const FACE_MODEL_LABEL = IS_DESKTOP
+  ? "InsightFace ResNet-50 · alta precisão"
+  : "MobileFaceNet · leve";
+
 // bump this when the pipeline changes so cached vectors get re-indexed
-export const MODEL_VERSION = "human-3-mobilefacenet-1024-v1";
+export const MODEL_VERSION = IS_DESKTOP
+  ? "human-4-insightface-resnet50-512-v1"
+  : "human-3-mobilefacenet-1024-v1";
 
 export type FaceMetrics = {
   symmetry: number;
@@ -61,7 +80,7 @@ const humanConfig: Partial<Config> = {
     detector: { rotation: true, maxDetected: 20, minConfidence: 0.18, return: false, iouThreshold: 0.25 },
     mesh: { enabled: true },
     iris: { enabled: true },
-    description: { enabled: true },
+    description: { enabled: true, modelPath: DESCRIPTION_MODEL },
     emotion: { enabled: false },
     antispoof: { enabled: false },
     liveness: { enabled: false },
@@ -570,27 +589,15 @@ export function distance(a: Float32Array | number[], b: Float32Array | number[])
   return Math.max(0, 1 - cos);
 }
 
-// Curva recalibrada para Human/MobileFaceNet (1024-d, L2-normalizado).
-// Na prática, mesma pessoa cai em cosine-distance 0.15–0.45 dependendo de
-// idade/pose/iluminação, e pessoas diferentes ficam acima de ~0.6.
-// A curva antiga era severa demais e derrubava match legítimo pra ~60%.
-//   d ≤ 0.15  → 100%   (praticamente idêntica)
-//   d ≈ 0.30  → ~93%   (mesma pessoa, condições OK)
-//   d ≈ 0.40  → ~80%   (mesma pessoa, condições ruins)
-//   d ≈ 0.50  → ~60%   (dúvida)
-//   d ≥ 0.72  → 0%     (diferente)
+// Curva sigmoide calibrada por modelo (distância de cosseno em vetores L2).
+// InsightFace ResNet-50 (512-d): mesmo rosto ~0.30–0.55, limiar clássico
+// de decisão ~0.55 — distribuições mais largas, então a curva é mais suave.
+// MobileFaceNet (1024-d): mesmo rosto ~0.15–0.45, decisão ~0.48.
+const SIM_CENTER = IS_DESKTOP ? 0.55 : 0.48;
+const SIM_STEEPNESS = IS_DESKTOP ? 10 : 13;
 export function similarity(d: number): number {
-  // Curva sigmoide calibrada: transição nítida na zona de decisão (0.42-0.55)
-  // - d ≤ 0.15  → ~100% (praticamente idêntica)
-  // - d ≈ 0.30  → ~95%  (mesma pessoa, ótimas condições)
-  // - d ≈ 0.40  → ~85%  (mesma pessoa, condições normais)
-  // - d ≈ 0.48  → ~55%  (zona de decisão — precisa validação humana)
-  // - d ≈ 0.55  → ~25%  (provável não-match)
-  // - d ≥ 0.70  → ~0%
   if (d <= 0.10) return 1;
-  const CENTER = 0.48;
-  const STEEPNESS = 13;
-  const raw = 1 / (1 + Math.exp(STEEPNESS * (d - CENTER)));
+  const raw = 1 / (1 + Math.exp(SIM_STEEPNESS * (d - SIM_CENTER)));
   return Math.max(0, Math.min(1, raw));
 }
 
