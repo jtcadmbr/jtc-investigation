@@ -80,7 +80,7 @@ const humanConfig: Partial<Config> = {
     detector: { rotation: true, maxDetected: 20, minConfidence: 0.18, return: false, iouThreshold: 0.25 },
     mesh: { enabled: true },
     iris: { enabled: true },
-    description: { enabled: true },
+    description: { enabled: true, modelPath: DESCRIPTION_MODEL },
     emotion: { enabled: false },
     antispoof: { enabled: false },
     liveness: { enabled: false },
