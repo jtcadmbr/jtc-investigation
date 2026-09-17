@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { Save, Camera, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ModalShell } from "./ModalShell";
-import { logHistorico } from "@/lib/investigacoes";
+import { logHistorico, uploadArquivo } from "@/lib/investigacoes";
 import { formatDateBR, brToISO, isoToBR } from "@/lib/format";
 
 const baseCls =
@@ -62,11 +62,15 @@ export function TestemunhaForm({
 }) {
   const [form, setForm] = useState<any>({});
   const [dataBR, setDataBR] = useState("");
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setForm(initial ?? {});
     setDataBR(initial?.data_relato ? isoToBR(initial.data_relato) : "");
+    setFotoFile(null);
+    setVideoFile(null);
   }, [initial]);
 
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
@@ -91,6 +95,37 @@ export function TestemunhaForm({
     for (const k of ["estava_presente", "viu_pessoalmente", "ouviu_pessoalmente"]) {
       payload[k] = form[k] == null ? null : !!form[k];
     }
+
+    let fotoUrl: string | null = form.foto_url ?? null;
+    let fotoPath: string | null = form.foto_storage_path ?? null;
+    let videoUrl: string | null = form.video_url ?? null;
+    let videoPath: string | null = form.video_storage_path ?? null;
+
+    if (fotoFile) {
+      const up = await uploadArquivo(user, fotoFile);
+      if (!up) {
+        setSaving(false);
+        return toast.error("Falha no upload da foto");
+      }
+      if (fotoPath) await supabase.storage.from("uploads").remove([fotoPath]);
+      fotoUrl = up.url;
+      fotoPath = up.storage_path;
+    }
+    if (videoFile) {
+      const up = await uploadArquivo(user, videoFile);
+      if (!up) {
+        setSaving(false);
+        return toast.error("Falha no upload do vídeo");
+      }
+      if (videoPath) await supabase.storage.from("uploads").remove([videoPath]);
+      videoUrl = up.url;
+      videoPath = up.storage_path;
+    }
+
+    payload.foto_url = fotoUrl;
+    payload.foto_storage_path = fotoPath;
+    payload.video_url = videoUrl;
+    payload.video_storage_path = videoPath;
 
     const { data, error } = initial?.id
       ? await supabase
@@ -242,6 +277,61 @@ export function TestemunhaForm({
             onChange={(e) => set("observacoes", e.target.value)}
             className={`${baseCls} resize-y`}
           />
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-[11px] text-muted-foreground">Foto da testemunha</label>
+            <label className="mt-1 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-4 py-5 text-sm text-primary hover:bg-primary/10 transition">
+              <Camera size={16} />
+              {fotoFile
+                ? fotoFile.name
+                : initial?.foto_url && !fotoFile
+                  ? "Foto já anexada — escolha outra para substituir"
+                  : "Anexar uma foto"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => setFotoFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            {(fotoFile || initial?.foto_url) && (
+              <div className="mt-2">
+                <img
+                  src={fotoFile ? URL.createObjectURL(fotoFile) : initial?.foto_url}
+                  alt=""
+                  className="max-h-40 rounded-lg border border-border object-contain"
+                />
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="text-[11px] text-muted-foreground">Vídeo da testemunha</label>
+            <label className="mt-1 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-4 py-5 text-sm text-primary hover:bg-primary/10 transition">
+              <Video size={16} />
+              {videoFile
+                ? videoFile.name
+                : initial?.video_url && !videoFile
+                  ? "Vídeo já anexado — escolha outro para substituir"
+                  : "Anexar um vídeo"}
+              <input
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            {(videoFile || initial?.video_url) && (
+              <div className="mt-2">
+                <video
+                  src={videoFile ? URL.createObjectURL(videoFile) : initial?.video_url}
+                  controls
+                  className="max-h-40 w-full rounded-lg border border-border bg-black"
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </ModalShell>

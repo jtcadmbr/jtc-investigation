@@ -38,6 +38,8 @@ export function TabTestemunhas({
 
   const remove = async (t: any) => {
     if (!confirm(`Excluir a testemunha "${t.nome}"?`)) return;
+    if (t.foto_storage_path) await supabase.storage.from("uploads").remove([t.foto_storage_path]);
+    if (t.video_storage_path) await supabase.storage.from("uploads").remove([t.video_storage_path]);
     const { error } = await supabase.from("testemunhas").delete().eq("id", t.id);
     if (error) return toast.error(error.message);
     await logHistorico(user, investigacaoId, "edicao", `Testemunha removida — ${t.nome}`);
@@ -72,9 +74,18 @@ export function TabTestemunhas({
           {items.map((t) => (
             <div key={t.id} className="rounded-2xl border border-primary/20 bg-card p-5">
               <div className="flex items-start gap-3 flex-wrap">
-                <div className="h-10 w-10 rounded-full bg-muted border border-primary/30 flex items-center justify-center text-primary shrink-0">
-                  <UserRound size={16} />
-                </div>
+                {t.foto_url ? (
+                  <img
+                    src={t.foto_url}
+                    alt=""
+                    loading="lazy"
+                    className="h-10 w-10 rounded-full border border-primary/30 object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-muted border border-primary/30 flex items-center justify-center text-primary shrink-0">
+                    <UserRound size={16} />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold truncate">{t.nome}</div>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -165,6 +176,34 @@ export function TabTestemunhas({
                     <Ear size={11} /> Observações
                   </div>
                   <p className="mt-1 text-xs">{t.observacoes}</p>
+                </div>
+              )}
+
+              {(t.foto_url || t.video_url) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                  {t.foto_url && (
+                    <a
+                      href={t.foto_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group overflow-hidden rounded-lg border border-primary/20"
+                    >
+                      <img
+                        src={t.foto_url}
+                        alt={`Foto de ${t.nome}`}
+                        loading="lazy"
+                        className="h-40 w-full object-cover group-hover:opacity-90 transition cursor-zoom-in"
+                      />
+                    </a>
+                  )}
+                  {t.video_url && (
+                    <video
+                      src={t.video_url}
+                      controls
+                      preload="metadata"
+                      className="h-40 w-full rounded-lg border border-primary/20 bg-black"
+                    />
+                  )}
                 </div>
               )}
             </div>

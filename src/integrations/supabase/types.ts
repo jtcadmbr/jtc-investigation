@@ -795,6 +795,8 @@ export type Database = {
           created_at: string
           data_relato: string | null
           estava_presente: boolean
+          foto_storage_path: string | null
+          foto_url: string | null
           id: string
           idade: number | null
           investigacao_id: string
@@ -807,12 +809,16 @@ export type Database = {
           relato: string | null
           updated_at: string
           user_id: string
+          video_storage_path: string | null
+          video_url: string | null
           viu_pessoalmente: boolean
         }
         Insert: {
           created_at?: string
           data_relato?: string | null
           estava_presente?: boolean
+          foto_storage_path?: string | null
+          foto_url?: string | null
           id?: string
           idade?: number | null
           investigacao_id: string
@@ -825,12 +831,16 @@ export type Database = {
           relato?: string | null
           updated_at?: string
           user_id: string
+          video_storage_path?: string | null
+          video_url?: string | null
           viu_pessoalmente?: boolean
         }
         Update: {
           created_at?: string
           data_relato?: string | null
           estava_presente?: boolean
+          foto_storage_path?: string | null
+          foto_url?: string | null
           id?: string
           idade?: number | null
           investigacao_id?: string
@@ -843,6 +853,8 @@ export type Database = {
           relato?: string | null
           updated_at?: string
           user_id?: string
+          video_storage_path?: string | null
+          video_url?: string | null
           viu_pessoalmente?: boolean
         }
         Relationships: [
