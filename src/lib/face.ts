@@ -589,27 +589,15 @@ export function distance(a: Float32Array | number[], b: Float32Array | number[])
   return Math.max(0, 1 - cos);
 }
 
-// Curva recalibrada para Human/MobileFaceNet (1024-d, L2-normalizado).
-// Na prática, mesma pessoa cai em cosine-distance 0.15–0.45 dependendo de
-// idade/pose/iluminação, e pessoas diferentes ficam acima de ~0.6.
-// A curva antiga era severa demais e derrubava match legítimo pra ~60%.
-//   d ≤ 0.15  → 100%   (praticamente idêntica)
-//   d ≈ 0.30  → ~93%   (mesma pessoa, condições OK)
-//   d ≈ 0.40  → ~80%   (mesma pessoa, condições ruins)
-//   d ≈ 0.50  → ~60%   (dúvida)
-//   d ≥ 0.72  → 0%     (diferente)
+// Curva sigmoide calibrada por modelo (distância de cosseno em vetores L2).
+// InsightFace ResNet-50 (512-d): mesmo rosto ~0.30–0.55, limiar clássico
+// de decisão ~0.55 — distribuições mais largas, então a curva é mais suave.
+// MobileFaceNet (1024-d): mesmo rosto ~0.15–0.45, decisão ~0.48.
+const SIM_CENTER = IS_DESKTOP ? 0.55 : 0.48;
+const SIM_STEEPNESS = IS_DESKTOP ? 10 : 13;
 export function similarity(d: number): number {
-  // Curva sigmoide calibrada: transição nítida na zona de decisão (0.42-0.55)
-  // - d ≤ 0.15  → ~100% (praticamente idêntica)
-  // - d ≈ 0.30  → ~95%  (mesma pessoa, ótimas condições)
-  // - d ≈ 0.40  → ~85%  (mesma pessoa, condições normais)
-  // - d ≈ 0.48  → ~55%  (zona de decisão — precisa validação humana)
-  // - d ≈ 0.55  → ~25%  (provável não-match)
-  // - d ≥ 0.70  → ~0%
   if (d <= 0.10) return 1;
-  const CENTER = 0.48;
-  const STEEPNESS = 13;
-  const raw = 1 / (1 + Math.exp(STEEPNESS * (d - CENTER)));
+  const raw = 1 / (1 + Math.exp(SIM_STEEPNESS * (d - SIM_CENTER)));
   return Math.max(0, Math.min(1, raw));
 }
 
